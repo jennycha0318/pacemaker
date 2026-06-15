@@ -1,40 +1,47 @@
-# Web (Next.js 앱)
+# Web — Next.js + Supabase 앱
 
-2단계: 실제 제품. Next.js + TypeScript + Tailwind + Prisma + Claude API.
-**아직 초기화 전** — 폴더 구조만 잡아둔 상태.
+Pacemaker 실제 제품. **Next.js 15 (App Router, TS, Tailwind) + Supabase (Auth + DB)**.
 
-## 초기화 (프로토타입 검증 후 실행)
+👉 **셋업/실행은 [SETUP.md](SETUP.md) 참고** (Supabase 키 + 스키마 + 구글 OAuth)
+
+## 빠른 시작
 ```bash
-# web/ 디렉토리에서
-npx create-next-app@latest . --ts --tailwind --app --src-dir
-npm install @prisma/client && npx prisma init
-npm install @anthropic-ai/sdk
+cd web
+npm install
+cp .env.local.example .env.local   # 값 채우기 (Supabase URL/anon key)
+# Supabase SQL Editor 에서 supabase/schema.sql 실행
+npm run dev    # http://localhost:3000
 ```
-> 주의: `create-next-app`은 기존 폴더 구조를 덮어쓸 수 있으니,
-> 빈 디렉토리에 생성 후 미리 잡아둔 `prisma/`, `src/lib/` 등을 병합하는 방식 권장.
 
 ## 구조
 ```
 web/
-├── prisma/schema.prisma   # DB 스키마 (작성됨)
-├── public/
-└── src/
-    ├── app/               # App Router (페이지·API)
-    │   ├── (marketing)/   # 랜딩
-    │   ├── consult/       # 진단 플로우
-    │   └── api/           # AI 진단 API
-    ├── components/{ui,consult}/
-    ├── lib/
-    │   ├── ai/            # Claude 연동 + 프롬프트 ★
-    │   ├── frameworks/    # 심리 프레임워크 규칙 레이어 ★ (핵심 차별점)
-    │   └── db/            # Prisma 클라이언트
-    ├── types/
-    └── styles/
+├── supabase/schema.sql        # DB 스키마 + RLS (Supabase에 실행)
+├── src/
+│   ├── middleware.ts          # 세션 갱신 + 보호 라우트
+│   ├── lib/
+│   │   ├── supabase/          # 클라이언트(browser/server/middleware)
+│   │   └── diagnose/          # 규칙 진단 엔진 + 설문 정의
+│   ├── components/            # Report, GoogleButton, SignOutButton
+│   └── app/
+│       ├── page.tsx           # 랜딩
+│       ├── login / signup / reset-password
+│       ├── auth/callback      # OAuth·이메일 콜백
+│       ├── home               # 홈(진단/히스토리/프로필)
+│       ├── diagnose           # 설문 → 진단 → 저장
+│       ├── history /[id]      # 히스토리 목록·재열람
+│       └── profile            # 계정·로그아웃
+└── prisma/schema.prisma       # (참고용 정규화 모델 — 현재는 supabase/schema.sql 사용)
 ```
-★ = 범용 LLM과 차별화되는 핵심 (PRD §11-2, docs/product/ai-logic.md)
 
-## 환경 변수 (.env — git에 올리지 말 것)
-```
-DATABASE_URL="file:./dev.db"
-ANTHROPIC_API_KEY="sk-ant-..."
-```
+## 인증
+- 이메일/비밀번호 + Google OAuth + 비밀번호 재설정 (Supabase Auth)
+- `middleware.ts`가 `/home /diagnose /history /profile` 보호
+
+## 데이터
+- `diagnoses` 테이블에 진단 결과 저장 (RLS: 본인 데이터만)
+- 히스토리에서 과거 진단 재열람
+
+## 다음 단계
+- 받은 메시지 해석 · 캡처 업로드 이식 (프로토타입 참고)
+- AI 개인화(Claude) 결합 — `docs/product/ai-personalization.md`

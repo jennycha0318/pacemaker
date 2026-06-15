@@ -1,0 +1,34 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { Report } from "@/components/Report";
+import type { Diagnosis } from "@/lib/diagnose/engine";
+
+export const dynamic = "force-dynamic";
+
+export default async function HistoryDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("diagnoses")
+    .select("result")
+    .eq("id", id)
+    .single();
+
+  if (!data) notFound();
+  const d = data.result as Diagnosis;
+
+  return (
+    <div>
+      <Link href="/history" className="text-sm text-muted">← 히스토리</Link>
+      <div className="mt-3">
+        <Report d={d} />
+      </div>
+      <Link href="/home" className="btn btn-ghost mt-5 block text-center">홈으로</Link>
+    </div>
+  );
+}

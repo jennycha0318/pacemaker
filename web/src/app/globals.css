@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  background: #fbf6f3;
+  color: #2a2438;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply w-full rounded-2xl px-5 py-3.5 text-[15px] font-bold transition active:scale-[0.98];
+  }
+  .btn-primary {
+    @apply bg-gradient-to-br from-primary to-primaryDark text-white shadow-lg shadow-primary/30;
+  }
+  .btn-ghost {
+    @apply border border-line bg-transparent text-muted hover:text-ink;
+  }
+  .card {
+    @apply rounded-[18px] border border-line bg-surface p-5;
+  }
+  .field-input {
+    @apply w-full rounded-xl border-[1.5px] border-line bg-surface px-3.5 py-3 text-[15px] outline-none focus:border-primary;
+  }
+}
