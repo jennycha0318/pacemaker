@@ -8,7 +8,7 @@
 // ── 상태 ──────────────────────────────────────
 const state = { stage: null, qIndex: 0, answers: {} };
 let lastDiag = null;          // 공유용 마지막 진단 결과
-let msgImageData = null;      // 업로드된 카톡 캡처(dataURL)
+let msgImages = [];           // 업로드된 카톡 캡처(dataURL) — 최대 3장
 const screenHistory = [];     // 뒤로가기용 화면 스택
 const TRANSIENT = new Set(["screen-analyzing"]); // 히스토리에 안 남길 화면
 
@@ -557,7 +557,7 @@ function demoImageResult() {
   };
 }
 
-function renderMsgReport(r, imageData) {
+function renderMsgReport(r, images) {
   const color = r.tone === "good" ? "var(--good)" : r.tone === "warn" ? "var(--warn)" : "var(--bad)";
   const readsHtml = r.reads.map((x) => {
     const sign = x.kind === "pos" ? "▲" : x.kind === "neg" ? "▼" : "·";
@@ -566,11 +566,12 @@ function renderMsgReport(r, imageData) {
   }).join("");
   const repliesHtml = r.replies.map((m) => `<div class="msg-bubble">${m}</div>`).join("");
 
-  const imageHtml = imageData
+  const imgs = images || [];
+  const imageHtml = imgs.length
     ? `<div class="report-card">
-        <p class="card-label">첨부한 캡처</p>
-        <img class="msg-shot" src="${imageData}" alt="첨부한 카톡 캡처" />
-        <p class="ai-foot">실제 서비스에서는 Claude가 이 캡처를 직접 읽고 분석합니다.</p>
+        <p class="card-label">첨부한 캡처 (${imgs.length}장)</p>
+        <div class="shot-grid">${imgs.map((src) => `<img class="msg-shot" src="${src}" alt="첨부한 카톡 캡처" />`).join("")}</div>
+        <p class="ai-foot">실제 서비스에서는 Claude가 이 캡처들을 직접 읽고 분석합니다.</p>
       </div>`
     : "";
 
@@ -602,37 +603,61 @@ function runMessageAnalysis() {
   const input = document.getElementById("msgInput");
   const hint = document.getElementById("msgHint");
   const text = (input.value || "").trim();
-  if (text.length < 4 && !msgImageData) {
+  if (text.length < 4 && msgImages.length === 0) {
     hint.textContent = "메시지를 입력하거나 카톡 캡처를 올려주세요.";
     return;
   }
   hint.textContent = "";
   const r = text.length >= 4 ? analyzeMessage(text) : demoImageResult();
-  renderMsgReport(r, msgImageData);
+  renderMsgReport(r, msgImages);
   showScreen("screen-msgresult");
 }
 
-// ── 캡처 이미지 업로드 ────────────────────────
-function handleImageFile(file) {
-  if (!file || !file.type.startsWith("image/")) return;
-  const reader = new FileReader();
-  reader.onload = (e) => { msgImageData = e.target.result; renderImagePreview(); };
-  reader.readAsDataURL(file);
+// ── 캡처 이미지 업로드 (최대 3장) ──────────────
+const MAX_IMAGES = 3;
+function handleImageFiles(fileList) {
+  const hint = document.getElementById("msgHint");
+  const files = Array.from(fileList || []).filter((f) => f.type.startsWith("image/"));
+  const room = MAX_IMAGES - msgImages.length;
+  if (room <= 0) {
+    if (hint) hint.textContent = `캡처는 최대 ${MAX_IMAGES}장까지 올릴 수 있어요.`;
+    return;
+  }
+  if (files.length > room && hint) hint.textContent = `캡처는 최대 ${MAX_IMAGES}장까지예요. ${room}장만 추가했어요.`;
+  files.slice(0, room).forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => { msgImages.push(e.target.result); renderImagePreview(); };
+    reader.readAsDataURL(file);
+  });
+  const fi = document.getElementById("msgImageInput"); if (fi) fi.value = "";
 }
 function renderImagePreview() {
-  const prompt = document.getElementById("uploadPrompt");
-  const preview = document.getElementById("uploadPreview");
-  const img = document.getElementById("msgImagePreview");
-  if (!prompt || !preview) return;
-  if (msgImageData) {
-    img.src = msgImageData;
-    prompt.hidden = true; preview.hidden = false;
-  } else {
-    prompt.hidden = false; preview.hidden = true; img.removeAttribute("src");
+  const grid = document.getElementById("uploadGrid");
+  if (!grid) return;
+  if (msgImages.length === 0) {
+    grid.innerHTML = `
+      <button class="upload-prompt-btn" data-action="pickImage" type="button">
+        <span class="upload-ico">+</span>
+        <span class="upload-main">카톡 캡처 이미지 올리기</span>
+        <span class="upload-sub">최대 ${MAX_IMAGES}장 · 탭하여 선택</span>
+      </button>`;
+    return;
   }
+  const thumbs = msgImages.map((src, i) => `
+    <div class="thumb">
+      <img src="${src}" alt="캡처 ${i + 1}" />
+      <button class="thumb-remove" data-action="removeImage" data-index="${i}" aria-label="삭제">×</button>
+    </div>`).join("");
+  const addTile = msgImages.length < MAX_IMAGES
+    ? `<button class="add-tile" data-action="pickImage" type="button">
+        <span class="add-ico">+</span>
+        <span class="add-txt">추가 (${msgImages.length}/${MAX_IMAGES})</span>
+      </button>`
+    : "";
+  grid.innerHTML = thumbs + addTile;
 }
 function resetMessageInput() {
-  msgImageData = null;
+  msgImages = [];
   const ta = document.getElementById("msgInput"); if (ta) ta.value = "";
   const hint = document.getElementById("msgHint"); if (hint) hint.textContent = "";
   const fi = document.getElementById("msgImageInput"); if (fi) fi.value = "";
@@ -960,7 +985,8 @@ document.addEventListener("click", (e) => {
   else if (action === "analyzeMsg") runMessageAnalysis();
   else if (action === "pickImage") document.getElementById("msgImageInput")?.click();
   else if (action === "removeImage") {
-    msgImageData = null;
+    const idx = parseInt(e.target.closest("[data-action]").dataset.index, 10);
+    if (!isNaN(idx)) msgImages.splice(idx, 1);
     const fi = document.getElementById("msgImageInput"); if (fi) fi.value = "";
     renderImagePreview();
   }
@@ -974,7 +1000,10 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// 캡처 파일 선택 시 미리보기
+// 캡처 파일 선택 시 미리보기 (여러 장)
 document.addEventListener("change", (e) => {
-  if (e.target && e.target.id === "msgImageInput") handleImageFile(e.target.files[0]);
+  if (e.target && e.target.id === "msgImageInput") handleImageFiles(e.target.files);
 });
+
+// 업로드 영역 초기 렌더 (프롬프트 버튼 표시)
+renderImagePreview();
