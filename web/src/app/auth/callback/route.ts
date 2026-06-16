@@ -10,10 +10,14 @@ export async function GET(request: Request) {
   const next = /^\/[^/\\]/.test(raw) ? raw : "/diagnose";
 
   if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(`${origin}${next}`);
-    console.error("Auth callback error:", error.message);
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) return NextResponse.redirect(`${origin}${next}`);
+      console.error("Auth callback error:", error.message);
+    } catch (e) {
+      console.error("Auth callback exception:", e);
+    }
   }
   return NextResponse.redirect(`${origin}/login?error=auth`);
 }

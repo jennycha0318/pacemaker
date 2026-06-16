@@ -14,9 +14,12 @@ interface Row {
 }
 
 function fmt(ts: string) {
-  const d = new Date(ts);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  // 서버 타임존(Vercel=UTC)과 무관하게 한국 시간으로 표시
+  return new Date(ts).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit",
+  });
 }
 
 export default async function HistoryPage() {

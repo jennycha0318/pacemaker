@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/SignOutButton";
 
@@ -8,6 +9,7 @@ export default async function ProfilePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) redirect("/login"); // 미들웨어 외 2차 방어
   const { count, error: countErr } = await supabase
     .from("diagnoses")
     .select("*", { count: "exact", head: true });

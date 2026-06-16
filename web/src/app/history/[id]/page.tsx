@@ -21,6 +21,8 @@ export default async function HistoryDetailPage({
 
   if (error || !data || !data.result || typeof data.result !== "object") notFound();
   const d = data.result as Diagnosis;
+  // 필수 필드 누락(깨진 데이터)이면 Report 크래시 대신 404
+  if (typeof d.score !== "number" || !d.plan || !Array.isArray(d.factors)) notFound();
 
   return (
     <div>

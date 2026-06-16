@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { SURVEYS, type Stage } from "@/lib/diagnose/survey";
@@ -23,46 +23,59 @@ export default function DiagnosePage() {
   const [free, setFree] = useState("");
   const [result, setResult] = useState<Diagnosis | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const savingRef = useRef(false);    // 중복 저장(insert) 방지
+  const advancingRef = useRef(false); // 설문 빠른 연타 방지
 
   function pickStage(s: Stage) {
     setStage(s); setAnswers({}); setQIndex(0); setFree(""); setPhase("survey");
   }
 
-  async function saveDiagnosis(d: Diagnosis) {
+  // stage 를 인자로 받아 in-flight 중 stage 변경에도 안전하게 저장
+  async function saveDiagnosis(d: Diagnosis, s: Stage) {
+    if (savingRef.current) return; // 동시/중복 저장 차단
+    savingRef.current = true;
     setSaveStatus("saving"); // 즉시 피드백 (로그인 확인 동안)
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data } = await supabase.auth.getUser();
+      const user = data?.user ?? null;
       if (!user) {
         setSaveStatus("guest"); // 비로그인 — 저장 안 함, 로그인 유도
         return;
       }
       const { error } = await supabase.from("diagnoses").insert({
         user_id: user.id,
-        stage,
+        stage: s,
         score: d.score,
         result: d,
       });
       setSaveStatus(error ? "error" : "saved");
     } catch {
       setSaveStatus("error"); // 네트워크/예외 — 무한 'saving' 방지
+    } finally {
+      savingRef.current = false;
     }
   }
 
   function finish(ans: Answers) {
-    const d = diagnose(stage, ans);
+    const s = stage; // 호출 시점 stage 고정
+    const d = diagnose(s, ans);
     setResult(d);
     setPhase("result");
-    saveDiagnosis(d);
+    saveDiagnosis(d, s);
   }
 
   function selectOption(qid: string, v: string) {
+    if (advancingRef.current) return; // 200ms 전환 중 추가 클릭 무시
+    advancingRef.current = true;
     const next = { ...answers, [qid]: v };
     setAnswers(next);
     const survey = SURVEYS[stage];
+    const isLast = qIndex >= survey.length - 1;
     setTimeout(() => {
-      if (qIndex < survey.length - 1) setQIndex(qIndex + 1);
-      else finish(next);
+      advancingRef.current = false;
+      if (isLast) finish(next);
+      else setQIndex((i) => i + 1);
     }, 200);
   }
 
@@ -103,7 +116,7 @@ export default function DiagnosePage() {
           <div className="mb-3 text-center">
             <p className="text-xs text-bad">저장에 실패했어요. 네트워크·로그인 상태를 확인해 주세요.</p>
             <button className="mt-1.5 text-xs font-bold text-primaryDark underline"
-              onClick={() => result && saveDiagnosis(result)}>다시 저장</button>
+              onClick={() => result && saveDiagnosis(result, stage)}>다시 저장</button>
           </div>
         )}
 
