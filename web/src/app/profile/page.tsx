@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/SignOutButton";
+import { ProfileEditor } from "@/components/ProfileEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -28,13 +29,19 @@ export default async function ProfilePage() {
   return (
     <div>
       <h2 className="mb-4 text-[23px] font-bold tracking-tight">내 프로필</h2>
-      <div className="card">
+      <div className="card mb-4">
         <Row k="이름" v={name} />
         <Row k="이메일" v={user?.email ?? "-"} />
         <Row k="로그인 방식" v={provider} />
         <Row k="진단 횟수" v={countText} />
       </div>
-      <SignOutButton />
+
+      <ProfileEditor />
+
+      <div className="mt-6">
+        <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">계정 관리</p>
+        <SignOutButton />
+      </div>
     </div>
   );
 }

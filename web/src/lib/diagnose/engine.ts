@@ -1,6 +1,7 @@
 // 규칙 기반 진단 엔진 (프로토타입 app.js 이식)
 // 점수·플랜·근거는 결정적 규칙으로 계산 → 신뢰. (AI 개인화는 추후 결합)
 import type { Stage } from "./survey";
+import { computePersonality, type Compat } from "./personality";
 
 export type Answers = Record<string, string>;
 export interface Factor { label: string; delta: number; }
@@ -20,6 +21,7 @@ export interface Diagnosis {
   plan: Plan;
   needsSupport?: boolean; // 정서 위기 신호 → 상담 연결 노출
   minor?: boolean; // 미성년(10대) → 청소년 눈높이 톤 + 지지 강화
+  compat?: Compat; // 성향·궁합 참고 레이어(MBTI·나이차) — 점수 미반영
 }
 
 type Map = Record<string, [number, string]>;
@@ -36,6 +38,7 @@ export function diagnose(stage: Stage, a: Answers): Diagnosis {
   else if (stage === "dating") res = diagnoseDating(a);
   else res = diagnoseBreakup(a);
   res.plan = makePlan(stage, res.score, a);
+  res.compat = computePersonality(a); // 참고 레이어 (점수엔 미반영)
   return res;
 }
 

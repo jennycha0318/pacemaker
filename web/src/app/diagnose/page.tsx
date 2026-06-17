@@ -1,12 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { SURVEYS, type Stage } from "@/lib/diagnose/survey";
 import { diagnose, type Answers, type Diagnosis } from "@/lib/diagnose/engine";
 import { Report } from "@/components/Report";
 import { LegalEthicsNotice } from "@/components/SupportNotices";
+import { YearSelect, MbtiSelect } from "@/components/InfoFields";
+import { getProfile, saveProfile } from "@/lib/profile";
 
 const STAGES: { v: Stage; name: string; note: string }[] = [
   { v: "crush", name: "썸 타는 중", note: "고백 타이밍이 고민돼요" },
@@ -14,12 +16,24 @@ const STAGES: { v: Stage; name: string; note: string }[] = [
   { v: "breakup", name: "이별 후", note: "재회하고 싶어요" },
 ];
 
+type Phase = "me" | "stage" | "partner" | "survey" | "result";
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "guest";
 
+const CUR_YEAR = new Date().getFullYear();
+// 청소년(청소년 모드) 판정: 연 나이 19세 이하 (안전상 넉넉히 포함)
+function isMinorYear(year: number | null): boolean {
+  return year != null && CUR_YEAR - year <= 19;
+}
+
 export default function DiagnosePage() {
-  const [phase, setPhase] = useState<"age" | "stage" | "survey" | "result">("age");
-  const [ageGroup, setAgeGroup] = useState<string | null>(null);
+  const [phase, setPhase] = useState<Phase>("me");
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [hasProfileBirth, setHasProfileBirth] = useState(false); // 로그인+생년 있으면 '내 정보' 단계 생략
+  const [myBirthYear, setMyBirthYear] = useState("");
+  const [myMbti, setMyMbti] = useState("");
   const [stage, setStage] = useState<Stage>("crush");
+  const [partnerBirthYear, setPartnerBirthYear] = useState("");
+  const [partnerMbti, setPartnerMbti] = useState("");
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [free, setFree] = useState("");
@@ -28,21 +42,37 @@ export default function DiagnosePage() {
   const savingRef = useRef(false);    // 중복 저장(insert) 방지
   const advancingRef = useRef(false); // 설문 빠른 연타 방지
 
-  function pickStage(s: Stage) {
-    setStage(s); setAnswers({}); setQIndex(0); setFree(""); setPhase("survey");
-  }
+  // 로그인 유저면 프로필 로드 → 생년 알면 '내 정보' 단계 생략
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabase = createClient();
+        const p = await getProfile(supabase);
+        if (p) {
+          if (p.birthYear) { setMyBirthYear(String(p.birthYear)); setHasProfileBirth(true); }
+          if (p.mbti) setMyMbti(p.mbti);
+          if (p.birthYear) setPhase("stage");
+        }
+      } catch {
+        // 비로그인/오류 — 기본 'me' 단계 유지
+      }
+      setLoadingProfile(false);
+    })();
+  }, []);
+
+  const minor = isMinorYear(myBirthYear ? Number(myBirthYear) : null);
 
   // stage 를 인자로 받아 in-flight 중 stage 변경에도 안전하게 저장
   async function saveDiagnosis(d: Diagnosis, s: Stage) {
-    if (savingRef.current) return; // 동시/중복 저장 차단
+    if (savingRef.current) return;
     savingRef.current = true;
-    setSaveStatus("saving"); // 즉시 피드백 (로그인 확인 동안)
+    setSaveStatus("saving");
     try {
       const supabase = createClient();
       const { data } = await supabase.auth.getUser();
       const user = data?.user ?? null;
       if (!user) {
-        setSaveStatus("guest"); // 비로그인 — 저장 안 함, 로그인 유도
+        setSaveStatus("guest");
         return;
       }
       const { error } = await supabase.from("diagnoses").insert({
@@ -53,26 +83,27 @@ export default function DiagnosePage() {
       });
       setSaveStatus(error ? "error" : "saved");
     } catch {
-      setSaveStatus("error"); // 네트워크/예외 — 무한 'saving' 방지
+      setSaveStatus("error");
     } finally {
       savingRef.current = false;
     }
   }
 
   function finish(ans: Answers) {
-    const s = stage; // 호출 시점 stage 고정
-    const d = diagnose(s, ans);
-    d.minor = ageGroup === "10대"; // 청소년 눈높이 모드
+    const s = stage;
+    const merged: Answers = { ...ans, myMbti, partnerMbti, myBirthYear, partnerBirthYear };
+    const d = diagnose(s, merged);
+    d.minor = minor; // 생년 기반 청소년 모드
     setResult(d);
     setPhase("result");
     saveDiagnosis(d, s);
   }
 
   function selectOption(qid: string, v: string) {
-    if (advancingRef.current) return; // 전환 중 추가 클릭 무시
+    if (advancingRef.current) return;
     advancingRef.current = true;
     const next = { ...answers, [qid]: v };
-    setAnswers(next); // 선택 즉시 강조(primarySoft) 후 다음으로
+    setAnswers(next);
     const survey = SURVEYS[stage];
     const isLast = qIndex >= survey.length - 1;
     setTimeout(() => {
@@ -82,36 +113,61 @@ export default function DiagnosePage() {
     }, 320);
   }
 
-  function reset() {
-    setPhase("stage"); setAnswers({}); setQIndex(0); setResult(null); setFree(""); setSaveStatus("idle");
+  async function submitMe() {
+    if (!myBirthYear) return;
+    // 로그인 상태면 프로필에 저장(베스트에포트 — 구글 가입 등 생년 미수집 사용자 백필)
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) await saveProfile(supabase, { birthYear: Number(myBirthYear), mbti: myMbti || null });
+    } catch {
+      // 무시
+    }
+    setPhase("stage");
   }
 
-  // ── 나이대 선택 ──
-  if (phase === "age") {
-    const AGES = ["10대", "20대", "30대", "40대 이상"];
+  function pickStage(s: Stage) {
+    setStage(s); setAnswers({}); setQIndex(0); setFree("");
+    setPartnerBirthYear(""); setPartnerMbti(""); setPhase("partner");
+  }
+
+  function reset() {
+    setPhase("stage"); setAnswers({}); setQIndex(0); setResult(null);
+    setFree(""); setSaveStatus("idle"); setPartnerBirthYear(""); setPartnerMbti("");
+  }
+
+  // ── 프로필 로딩 중 ──
+  if (loadingProfile) {
+    return <div className="card text-center text-sm text-muted">불러오는 중…</div>;
+  }
+
+  // ── 내 정보 (생년 + 내 MBTI) ──
+  if (phase === "me") {
     return (
       <div>
         <Link href="/" className="text-sm text-muted">← 처음으로</Link>
-        <h2 className="mb-1.5 mt-2 text-[23px] font-bold tracking-tight">나이대를 알려주세요</h2>
-        <p className="mb-6 text-sm text-muted">나이에 맞춰 더 편하게 설명해 드릴게요.</p>
-        <div className="grid grid-cols-2 gap-3">
-          {AGES.map((g) => (
-            <button key={g} onClick={() => { setAgeGroup(g); setPhase("stage"); }}
-              className="rounded-2xl border border-white/60 bg-white/60 px-4 py-5 text-base font-bold backdrop-blur transition active:scale-[0.98] hover:border-primary">
-              {g}
-            </button>
-          ))}
-        </div>
+        <h2 className="mb-1.5 mt-2 text-[23px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
+        <p className="mb-6 text-sm text-muted">나이에 맞춰 더 편하게 설명하고, 결과를 개인화하는 데 써요.</p>
+
+        <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
+        <div className="mb-4"><YearSelect value={myBirthYear} onChange={setMyBirthYear} ariaLabel="내 출생연도" /></div>
+
+        <label className="mb-1.5 block text-[13px] font-bold">내 MBTI <span className="font-normal text-muted">(선택)</span></label>
+        <div className="mb-1.5"><MbtiSelect value={myMbti} onChange={setMyMbti} ariaLabel="내 MBTI" /></div>
+        <p className="mb-5 text-[11.5px] text-muted">MBTI는 참고 요소예요. 몰라도 진단에는 문제없어요.</p>
+
+        <button className="btn btn-primary" onClick={submitMe} disabled={!myBirthYear}>다음</button>
       </div>
     );
   }
 
   // ── 상황 선택 ──
   if (phase === "stage") {
-    const isMinor = ageGroup === "10대";
     return (
       <div>
-        <button onClick={() => setPhase("age")} className="text-sm text-muted">← 나이대</button>
+        {hasProfileBirth
+          ? <Link href="/" className="text-sm text-muted">← 처음으로</Link>
+          : <button onClick={() => setPhase("me")} className="text-sm text-muted">← 내 정보</button>}
         <h2 className="mb-1.5 mt-2 text-[23px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
         <p className="mb-6 text-sm text-muted">상황에 맞춰 질문이 달라집니다. 로그인 없이 바로 진단받을 수 있어요.</p>
         <div className="flex flex-col gap-3.5">
@@ -126,13 +182,34 @@ export default function DiagnosePage() {
             </button>
           ))}
         </div>
-        {isMinor ? (
+        {minor ? (
           <p className="mt-6 text-center text-[12px] text-muted">편하게 골라줘요. 정답은 없어요.</p>
         ) : (
           <div className="mt-6 rounded-xl border border-line bg-surface/60 p-3.5">
             <LegalEthicsNotice />
           </div>
         )}
+      </div>
+    );
+  }
+
+  // ── 상대 정보 (선택) ──
+  if (phase === "partner") {
+    return (
+      <div>
+        <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
+        <h2 className="mb-1.5 mt-2 text-[23px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
+        <p className="mb-6 text-sm text-muted">알면 궁합·소통 팁을 더해드려요. <b className="text-ink">몰라도 괜찮아요</b> — 건너뛰어도 진단은 똑같이 정확해요.</p>
+
+        <label className="mb-1.5 block text-[13px] font-bold">상대 출생연도 <span className="font-normal text-muted">(선택)</span></label>
+        <div className="mb-4"><YearSelect value={partnerBirthYear} onChange={setPartnerBirthYear} ariaLabel="상대 출생연도" /></div>
+
+        <label className="mb-1.5 block text-[13px] font-bold">상대 MBTI <span className="font-normal text-muted">(선택)</span></label>
+        <div className="mb-1.5"><MbtiSelect value={partnerMbti} onChange={setPartnerMbti} ariaLabel="상대 MBTI" /></div>
+        <p className="mb-5 text-[11.5px] text-muted">상대 정보는 제3자 정보라 꼭 필요한 만큼만 받아요. MBTI·나이차는 참고 요소예요.</p>
+
+        <button className="btn btn-primary" onClick={() => setPhase("survey")}>다음</button>
+        <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
       </div>
     );
   }
@@ -178,7 +255,7 @@ export default function DiagnosePage() {
 
   return (
     <div>
-      <button onClick={() => (qIndex > 0 ? setQIndex(qIndex - 1) : reset())} className="text-sm text-muted">← 이전</button>
+      <button onClick={() => (qIndex > 0 ? setQIndex(qIndex - 1) : setPhase("partner"))} className="text-sm text-muted">← 이전</button>
       <div className="my-3 h-1.5 overflow-hidden rounded-full bg-line"
         role="progressbar" aria-label="설문 진행률" aria-valuemin={0} aria-valuemax={total} aria-valuenow={qIndex + 1}>
         <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500 ease-out"

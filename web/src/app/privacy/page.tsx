@@ -14,7 +14,9 @@ export default function PrivacyPage() {
       <Section title="1. 수집하는 항목">
         <ul className="list-disc pl-5">
           <li>계정: 이메일, 닉네임(이름). Google 가입 시 Google 계정의 표시 이름</li>
+          <li>프로필: 출생연도, MBTI(선택), 애착 성향(선택)</li>
           <li>진단 입력: 관계 상황·성향 응답, 자유서술 텍스트</li>
+          <li>상대 정보(선택, 입력 시): 상대의 출생연도·MBTI — 제3자 정보라 꼭 필요한 만큼만 받습니다</li>
           <li>진단 결과 및 생성 시각</li>
         </ul>
       </Section>

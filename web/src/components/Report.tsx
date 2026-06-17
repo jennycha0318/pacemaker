@@ -114,6 +114,31 @@ export function Report({ d }: { d: Diagnosis }) {
         )}
       </div>
 
+      {/* 성향·궁합 (참고) — MBTI·나이차, 점수 미반영 */}
+      {d.compat && (
+        <div className="card">
+          <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primaryDark">
+            성향·궁합
+            <span className="rounded-full bg-primarySoft px-2 py-0.5 text-[10px] font-bold normal-case text-primaryDark">참고</span>
+          </p>
+          {d.compat.mbtiNote && <p className="mb-2 text-sm font-bold text-ink">{d.compat.mbtiNote}</p>}
+          {d.compat.ageGapNote && <p className="mb-2 text-[13px] text-muted">{d.compat.ageGapNote}</p>}
+          {d.compat.tips.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {d.compat.tips.map((t, i) => (
+                <li key={i} className="flex gap-2 text-sm">
+                  <span className="font-bold text-accent">·</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-3 text-[11px] leading-relaxed text-muted">
+            MBTI·나이차는 참고 요소예요. 핵심 판단은 위의 신호(연락 흐름·반응·마음 상태)를 기준으로 해요.
+          </p>
+        </div>
+      )}
+
       {/* 법적·윤리 고지 (외도·학대) — 청소년에겐 비노출(지지 중심) */}
       {!d.minor && <LegalEthicsNotice compact />}
     </div>

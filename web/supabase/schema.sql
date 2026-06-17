@@ -28,3 +28,26 @@ create policy "diagnoses_delete_own"
 
 create index if not exists diagnoses_user_created
   on public.diagnoses (user_id, created_at desc);
+
+-- 사용자 프로필 (영속 입력: 생년·MBTI·애착유형) — 진단 개인화/안전(청소년) 판정용
+create table if not exists public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  birth_year int,                      -- 출생연도 (청소년/성인 판정·나이차 참고)
+  mbti text,                           -- 4글자 MBTI 또는 null(비공개/모름)
+  attachment text,                     -- secure | anxious | avoidant | null
+  updated_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+create policy "profiles_select_own"
+  on public.profiles for select
+  using (auth.uid() = id);
+
+create policy "profiles_insert_own"
+  on public.profiles for insert
+  with check (auth.uid() = id);
+
+create policy "profiles_update_own"
+  on public.profiles for update
+  using (auth.uid() = id);

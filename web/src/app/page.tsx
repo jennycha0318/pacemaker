@@ -26,14 +26,14 @@ export default async function LandingPage() {
       <p className="mb-7 text-[15px] text-muted">
         내 상황과 상대 성향 데이터를 분석해
         <br />
-        <b className="text-ink">언제·어떻게</b> 행동해야 성공 확률이 높은지 알려주는 AI 컨설턴트
+        성공 확률이 높아지는 <b className="text-ink">타이밍과 행동</b>을 제안
       </p>
       <Link href="/diagnose" className="btn btn-primary block text-center">무료로 진단 시작 (로그인 없이)</Link>
       <Link href="/login" className="btn btn-ghost mt-3 block text-center">로그인 · 회원가입</Link>
       <ul className="mt-8 flex flex-col gap-3 text-sm">
-        <li className="card">일반론 아닌 <b>내 상황</b> 맞춤 분석</li>
-        <li className="card">듣기 좋은 말 대신, <b>솔직하되 따뜻한</b> 진단</li>
-        <li className="card">바로 쓸 수 있는 <b>연락 문구</b>까지</li>
+        <li className="card">검증된 심리 프레임워크와 연애 의사결정 패턴 기반의 진단 엔진</li>
+        <li className="card">개인별 성향과 상황에 맞춤화</li>
+        <li className="card">실행 타이밍·방법·문구까지 제안하여 성공 확률 향상</li>
       </ul>
     </div>
   );
