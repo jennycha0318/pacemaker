@@ -69,17 +69,17 @@ export default function DiagnosePage() {
   }
 
   function selectOption(qid: string, v: string) {
-    if (advancingRef.current) return; // 200ms 전환 중 추가 클릭 무시
+    if (advancingRef.current) return; // 전환 중 추가 클릭 무시
     advancingRef.current = true;
     const next = { ...answers, [qid]: v };
-    setAnswers(next);
+    setAnswers(next); // 선택 즉시 강조(primarySoft) 후 다음으로
     const survey = SURVEYS[stage];
     const isLast = qIndex >= survey.length - 1;
     setTimeout(() => {
       advancingRef.current = false;
       if (isLast) finish(next);
       else setQIndex((i) => i + 1);
-    }, 200);
+    }, 320);
   }
 
   function reset() {
@@ -97,7 +97,7 @@ export default function DiagnosePage() {
         <div className="grid grid-cols-2 gap-3">
           {AGES.map((g) => (
             <button key={g} onClick={() => { setAgeGroup(g); setPhase("stage"); }}
-              className="rounded-2xl border-[1.5px] border-line bg-surface px-4 py-5 text-base font-bold hover:border-primary">
+              className="rounded-2xl border border-white/60 bg-white/60 px-4 py-5 text-base font-bold backdrop-blur transition active:scale-[0.98] hover:border-primary">
               {g}
             </button>
           ))}
@@ -117,7 +117,7 @@ export default function DiagnosePage() {
         <div className="flex flex-col gap-3.5">
           {STAGES.map((s) => (
             <button key={s.v} onClick={() => pickStage(s.v)}
-              className="flex items-center justify-between rounded-[18px] border-[1.5px] border-line bg-surface p-5 text-left transition hover:border-primary">
+              className="flex items-center justify-between rounded-[18px] border border-white/60 bg-white/60 p-5 text-left backdrop-blur transition active:scale-[0.98] hover:border-primary">
               <span>
                 <span className="block text-lg font-bold">{s.name}</span>
                 <span className="block text-[13px] text-muted">{s.note}</span>
@@ -181,7 +181,7 @@ export default function DiagnosePage() {
       <button onClick={() => (qIndex > 0 ? setQIndex(qIndex - 1) : reset())} className="text-sm text-muted">← 이전</button>
       <div className="my-3 h-1.5 overflow-hidden rounded-full bg-line"
         role="progressbar" aria-label="설문 진행률" aria-valuemin={0} aria-valuemax={total} aria-valuenow={qIndex + 1}>
-        <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
+        <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500 ease-out"
           style={{ width: `${(qIndex / total) * 100}%` }} />
       </div>
       <p className="mb-2.5 text-[13px] font-bold text-primaryDark">질문 {qIndex + 1} / {total}</p>
@@ -189,18 +189,18 @@ export default function DiagnosePage() {
 
       {q.type === "text" ? (
         <div>
-          {q.desc && <p className="-mt-2 mb-3.5 text-sm text-muted">{q.desc}</p>}
+          {q.desc && <p className="-mt-2 mb-1.5 text-sm text-muted">{q.desc}</p>}
+          <p className="mb-3.5 text-[13px] text-muted">(선택) 자세히 적을수록 더 정확해져요. 비워둬도 괜찮아요.</p>
           <textarea className="field-input min-h-[140px] resize-y leading-relaxed" placeholder={q.placeholder}
             aria-label={q.title} value={free} onChange={(e) => setFree(e.target.value)} />
-          <button className="btn btn-primary mt-3.5" onClick={() => finish({ ...answers, freeText: free })}>진단 받기</button>
-          <button className="btn btn-ghost mt-2.5" onClick={() => finish({ ...answers, freeText: "" })}>건너뛰고 진단하기</button>
+          <button className="btn btn-primary mt-3.5" onClick={() => finish({ ...answers, freeText: free })}>진단하기</button>
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">
           {q.options!.map((opt) => (
             <button key={opt.v} onClick={() => selectOption(q.id, opt.v)}
-              className={`rounded-[14px] border-[1.5px] p-4 text-left text-[15px] transition ${
-                answers[q.id] === opt.v ? "border-primary bg-primarySoft font-bold" : "border-line bg-surface hover:border-primary"
+              className={`rounded-[14px] border p-4 text-left text-[15px] backdrop-blur transition active:scale-[0.99] ${
+                answers[q.id] === opt.v ? "border-primary bg-primarySoft font-bold" : "border-white/60 bg-white/60 hover:border-primary"
               }`}>
               {opt.label}
               {opt.note && <span className="mt-0.5 block text-xs font-normal text-muted">{opt.note}</span>}

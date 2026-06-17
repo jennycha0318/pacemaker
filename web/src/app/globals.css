@@ -27,28 +27,59 @@
 body {
   font-family: "GamtanRoad Dotum", "Pretendard Variable", Pretendard, -apple-system,
     BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  background: #f5f7f5;
-  color: #1e2a25;
+  color: #2c2f55;
   -webkit-font-smoothing: antialiased;
-  /* 한글 줄바꿈: 단어 단위로(어절) 끊기 */
   word-break: keep-all;
   overflow-wrap: break-word;
+  min-height: 100vh;
+  /* 파스텔 드리미 메시 그라데이션 (Lavender·Periwinkle·Wisteria·Aqua) */
+  background-color: #eef0fb;
+  background-image:
+    radial-gradient(at 12% 8%, rgba(222, 217, 226, 0.9) 0px, transparent 50%),
+    radial-gradient(at 85% 12%, rgba(192, 185, 221, 0.85) 0px, transparent 50%),
+    radial-gradient(at 78% 82%, rgba(128, 161, 212, 0.55) 0px, transparent 50%),
+    radial-gradient(at 18% 92%, rgba(117, 201, 200, 0.5) 0px, transparent 52%),
+    radial-gradient(at 50% 50%, rgba(247, 244, 234, 0.6) 0px, transparent 60%);
+  background-attachment: fixed;
 }
 
 @layer components {
   .btn {
-    @apply w-full rounded-2xl px-5 py-3.5 text-[15px] font-bold transition active:scale-[0.98];
+    @apply w-full rounded-full px-5 py-3.5 text-[15px] font-bold transition active:scale-[0.98];
   }
+  /* 메인 CTA: 위스테리아→아쿠아 그라데이션 필 */
   .btn-primary {
-    @apply bg-gradient-to-br from-primary to-primaryDark text-white shadow-lg shadow-primary/25;
+    @apply text-white;
+    background-image: linear-gradient(135deg, #80a1d4, #75c9c8);
+    box-shadow: 0 10px 24px rgba(96, 130, 188, 0.3);
   }
+  /* 보조: 글래스 */
   .btn-ghost {
-    @apply border border-line bg-transparent text-muted hover:text-ink;
+    @apply font-bold text-ink;
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
   }
+  .btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+  /* 글래스 카드 */
   .card {
-    @apply rounded-[18px] border border-line bg-surface p-5;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 8px 30px rgba(70, 80, 130, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    @apply p-5;
   }
   .field-input {
-    @apply w-full rounded-xl border-[1.5px] border-line bg-surface px-3.5 py-3 text-[15px] outline-none focus:border-primary;
+    @apply w-full rounded-2xl px-3.5 py-3 text-[15px] text-ink outline-none;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+  }
+  .field-input:focus {
+    border-color: #80a1d4;
   }
 }

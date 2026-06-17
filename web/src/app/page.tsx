@@ -32,7 +32,7 @@ export default async function LandingPage() {
       <Link href="/login" className="btn btn-ghost mt-3 block text-center">로그인 · 회원가입</Link>
       <ul className="mt-8 flex flex-col gap-3 text-sm">
         <li className="card">일반론 아닌 <b>내 상황</b> 맞춤 분석</li>
-        <li className="card">‘냉정한 거울’ — 듣기 좋은 말 대신 솔직한 진단</li>
+        <li className="card">듣기 좋은 말 대신, <b>솔직하되 따뜻한</b> 진단</li>
         <li className="card">바로 쓸 수 있는 <b>연락 문구</b>까지</li>
       </ul>
     </div>

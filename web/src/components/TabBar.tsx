@@ -45,8 +45,11 @@ export function TabBar() {
   if (HIDE_ON.includes(pathname)) return null;
 
   return (
-    <nav aria-label="주요 메뉴" className="fixed bottom-0 left-1/2 z-20 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface/95 backdrop-blur">
-      <div className="flex">
+    <nav
+      aria-label="주요 메뉴"
+      className="fixed bottom-0 left-1/2 z-20 w-full max-w-app -translate-x-1/2 border-t border-white/50 bg-white/65 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
+    >
+      <div className="flex px-2 pt-1.5">
         {TABS.map((t) => {
           const active = pathname === t.href || pathname.startsWith(t.href + "/");
           return (
@@ -55,24 +58,28 @@ export function TabBar() {
               href={t.href}
               aria-label={t.label}
               aria-current={active ? "page" : undefined}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-                active ? "text-primary" : "text-muted"
-              }`}
+              className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={active ? 2 : 1.7}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+              <span
+                className={`grid h-9 w-14 place-items-center rounded-2xl transition ${
+                  active ? "bg-primarySoft text-primary" : "text-muted"
+                }`}
               >
-                {t.icon}
-              </svg>
-              {t.label}
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={active ? 2 : 1.7}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  {t.icon}
+                </svg>
+              </span>
+              <span className={`text-[11.5px] font-bold ${active ? "text-primary" : "text-muted"}`}>{t.label}</span>
             </Link>
           );
         })}

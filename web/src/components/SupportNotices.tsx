@@ -5,8 +5,13 @@
 export function CrisisResources({ minor = false }: { minor?: boolean }) {
   if (minor) {
     return (
-      <div className="rounded-2xl border border-primary/40 bg-primarySoft p-4">
-        <p className="mb-1 text-sm font-bold text-ink">혼자 힘들어하지 않아도 돼요</p>
+      <div className="rounded-2xl border-2 border-primary bg-primarySoft p-4">
+        <p className="mb-1 flex items-center gap-1.5 text-sm font-bold text-ink">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.01" />
+          </svg>
+          혼자 힘들어하지 않아도 돼요
+        </p>
         <p className="mb-3 text-[13px] text-muted">
           마음이 많이 무겁고 힘들 땐, 편하게 들어주는 곳이 있어요. 비밀은 지켜지고, 모두 무료예요.
         </p>
@@ -29,8 +34,13 @@ export function CrisisResources({ minor = false }: { minor?: boolean }) {
     );
   }
   return (
-    <div className="rounded-2xl border border-primary/40 bg-primarySoft p-4">
-      <p className="mb-1 text-sm font-bold text-ink">혼자 견디기 힘들다면</p>
+    <div className="rounded-2xl border-2 border-primary bg-primarySoft p-4">
+      <p className="mb-1 flex items-center gap-1.5 text-sm font-bold text-ink">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.01" />
+        </svg>
+        혼자 견디기 힘들다면
+      </p>
       <p className="mb-3 text-[13px] text-muted">
         지금 많이 힘들다면 전문가의 도움을 받는 것도 좋은 선택이에요. 모두 무료·24시간 상담이에요.
       </p>

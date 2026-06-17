@@ -2,11 +2,11 @@ import type { Diagnosis } from "@/lib/diagnose/engine";
 import { CrisisResources, LegalEthicsNotice, MinorSupportBanner } from "@/components/SupportNotices";
 
 export function Report({ d }: { d: Diagnosis }) {
-  const color = d.score >= 65 ? "#2e7d5b" : d.score >= 45 ? "#c08a2e" : "#c2564c";
+  const color = d.score >= 65 ? "#4fa3a2" : d.score >= 45 ? "#c79a4e" : "#b96b8f";
   const badge = d.score >= 65 ? "지금이 좋은 타이밍" : d.score >= 45 ? "조금 더 준비가 필요" : "지금은 기다릴 때";
   const C = 2 * Math.PI * 52;
   const offset = C * (1 - d.score / 100);
-  const planColor = d.plan.tone === "good" ? "#2e7d5b" : d.plan.tone === "warn" ? "#c08a2e" : "#c2564c";
+  const planColor = d.plan.tone === "good" ? "#4fa3a2" : d.plan.tone === "warn" ? "#c79a4e" : "#b96b8f";
   const factors = [...d.factors]
     .filter((f) => f.delta !== 0)
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
@@ -22,7 +22,7 @@ export function Report({ d }: { d: Diagnosis }) {
         <p className="mb-1 text-sm font-bold text-muted">{d.scoreTitle}</p>
         <div className="relative mx-auto my-1.5 h-40 w-40">
           <svg width="160" height="160" viewBox="0 0 130 130" className="-rotate-90">
-            <circle cx="65" cy="65" r="52" fill="none" stroke="#e3eae5" strokeWidth="13" />
+            <circle cx="65" cy="65" r="52" fill="none" stroke="#e6e3f2" strokeWidth="13" />
             <circle cx="65" cy="65" r="52" fill="none" stroke={color} strokeWidth="13"
               strokeLinecap="round" strokeDasharray={C} strokeDashoffset={offset} />
           </svg>
@@ -67,10 +67,10 @@ export function Report({ d }: { d: Diagnosis }) {
             const pos = f.delta > 0;
             return (
               <li key={i} className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm"
-                style={{ background: pos ? "#e8f2ec" : "#fbece9" }}>
-                <span className="text-[11px]" style={{ color: pos ? "#2e7d5b" : "#c2564c" }}>{pos ? "▲" : "▼"}</span>
+                style={{ background: pos ? "#e4f3f2" : "#f6e6ee" }}>
+                <span className="text-[11px]" style={{ color: pos ? "#4fa3a2" : "#b96b8f" }}>{pos ? "▲" : "▼"}</span>
                 <span className="flex-1">{f.label}</span>
-                <span className="text-[13px] font-bold" style={{ color: pos ? "#2e7d5b" : "#c2564c" }}>
+                <span className="text-[13px] font-bold" style={{ color: pos ? "#4fa3a2" : "#b96b8f" }}>
                   {pos ? "+" : ""}{f.delta}
                 </span>
               </li>
@@ -97,7 +97,7 @@ export function Report({ d }: { d: Diagnosis }) {
         <p className="mb-3.5 text-xs font-bold uppercase tracking-wide text-primaryDark">이것만은 주의하세요</p>
         <ul className="flex flex-col gap-2.5">
           {d.risks.map((r, i) => (
-            <li key={i} className="flex gap-2.5 rounded-xl border border-[#f6d9d2] bg-[#fdf3f0] px-3.5 py-3 text-sm">
+            <li key={i} className="flex gap-2.5 rounded-xl border border-[#f0dbe6] bg-[#faf1f6] px-3.5 py-3 text-sm">
               <span className="font-bold text-bad">•</span>{r}
             </li>
           ))}
@@ -105,7 +105,7 @@ export function Report({ d }: { d: Diagnosis }) {
       </div>
 
       {/* 메시지 */}
-      <div className="card bg-gradient-to-br from-[#eef5f1] to-[#f3f7f5]">
+      <div className="card bg-gradient-to-br from-[#eaeef8] to-[#e7f4f3]">
         <p className="mb-3.5 text-xs font-bold uppercase tracking-wide text-primaryDark">{d.msgLabel}</p>
         {d.hold ? (
           <div className="rounded-xl border border-dashed border-primary bg-surface p-4 text-sm">{d.hold}</div>
