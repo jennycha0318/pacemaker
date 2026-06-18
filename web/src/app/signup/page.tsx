@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { GoogleButton } from "@/components/GoogleButton";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
 import { saveProfile } from "@/lib/profile";
+import { BrandLockup } from "@/components/Logo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -59,6 +60,7 @@ export default function SignupPage() {
 
   return (
     <div className="pt-4">
+      <BrandLockup size={30} className="mb-6" />
       <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">회원가입</h2>
       <p className="mb-6 text-sm text-muted">이메일로 가입하거나 Google을 사용하세요.</p>
 

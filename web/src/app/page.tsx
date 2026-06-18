@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { BrandLockup } from "@/components/Logo";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default async function LandingPage() {
 
   return (
     <div className="pt-6">
+      <BrandLockup className="mb-7" />
       <p className="mb-3.5 text-sm font-bold text-primaryDark">고백해도 될까? 지금 연락해도 될까?</p>
       <h1 className="mb-4 text-[28px] font-bold leading-[1.35] tracking-tight">
         연애의 결정적 순간,
@@ -31,7 +33,7 @@ export default async function LandingPage() {
       <Link href="/diagnose" className="btn btn-primary block text-center">무료로 진단 시작 (로그인 없이)</Link>
       <Link href="/login" className="btn btn-ghost mt-3 block text-center">로그인 · 회원가입</Link>
       <ul className="mt-8 flex flex-col gap-3 text-sm">
-        <li className="card">검증된 심리 프레임워크와 연애 의사결정 패턴 기반의 진단 엔진</li>
+        <li className="card">실제 연애 의사결정·성공/실패 패턴을 데이터화한 분석</li>
         <li className="card">개인별 성향과 상황에 맞춤화</li>
         <li className="card">실행 타이밍·방법·문구까지 제안하여 성공 확률 향상</li>
       </ul>
