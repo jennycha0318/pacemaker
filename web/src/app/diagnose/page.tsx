@@ -19,6 +19,45 @@ const STAGES: { v: Stage; name: string; note: string }[] = [
 type Phase = "me" | "stage" | "partner" | "survey" | "result";
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "guest";
 
+// ── 통합 진행 스텝(대단계) ──
+// me/stage/partner/survey 4단계의 위치를 글래스 톤 세그먼트로 표시.
+// 로그인으로 '내 정보'를 건너뛴 경우(meDone) 1번 단계는 done 처리.
+const STEP_LABELS = ["내 정보", "상황", "상대", "설문"] as const;
+const STEP_PHASES: Phase[] = ["me", "stage", "partner", "survey"];
+
+function StepIndicator({ phase, meDone }: { phase: Phase; meDone: boolean }) {
+  const current = STEP_PHASES.indexOf(phase);
+  return (
+    <div className="mb-5 flex items-center gap-2" aria-label="진행 단계" role="list">
+      {STEP_LABELS.map((label, i) => {
+        const isCurrent = i === current;
+        const isDone = i < current || (i === 0 && meDone && current >= 0);
+        return (
+          <div key={label} className="flex flex-1 flex-col items-center gap-1.5" role="listitem"
+            aria-current={isCurrent ? "step" : undefined}>
+            <span className={`h-1.5 w-full rounded-full transition-colors ${
+              isCurrent ? "bg-primary" : isDone ? "bg-primary/55" : "bg-line"
+            }`} />
+            <span className={`text-[10.5px] font-bold tracking-tight ${
+              isCurrent ? "text-primaryDark" : isDone ? "text-primary/80" : "text-muted/60"
+            }`}>{label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// 선택됨 표시용 인라인 체크 아이콘
+function CheckIcon() {
+  return (
+    <svg className="h-4 w-4 shrink-0 text-primaryDark" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
 const CUR_YEAR = new Date().getFullYear();
 // 청소년(청소년 모드) 판정: 연 나이 19세 이하 (안전상 넉넉히 포함)
 function isMinorYear(year: number | null): boolean {
@@ -146,6 +185,7 @@ export default function DiagnosePage() {
     return (
       <div>
         <Link href="/" className="text-sm text-muted">← 처음으로</Link>
+        <StepIndicator phase="me" meDone={hasProfileBirth} />
         <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
         <p className="mb-6 text-sm text-muted">나이에 맞춰 더 편하게 설명하고, 결과를 개인화하는 데 써요.</p>
 
@@ -154,7 +194,7 @@ export default function DiagnosePage() {
 
         <label className="mb-1.5 block text-[13px] font-bold">내 MBTI <span className="font-normal text-muted">(선택)</span></label>
         <div className="mb-1.5"><MbtiSelect value={myMbti} onChange={setMyMbti} ariaLabel="내 MBTI" /></div>
-        <p className="mb-5 text-[11.5px] text-muted">MBTI는 참고 요소예요. 몰라도 진단에는 문제없어요.</p>
+        <p className="mb-5 text-[12.5px] text-muted">MBTI는 참고 요소예요. 몰라도 진단에는 문제없어요.</p>
 
         <button className="btn btn-primary" onClick={submitMe} disabled={!myBirthYear}>다음</button>
       </div>
@@ -168,6 +208,7 @@ export default function DiagnosePage() {
         {hasProfileBirth
           ? <Link href="/" className="text-sm text-muted">← 처음으로</Link>
           : <button onClick={() => setPhase("me")} className="text-sm text-muted">← 내 정보</button>}
+        <StepIndicator phase="stage" meDone={hasProfileBirth} />
         <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
         <p className="mb-6 text-sm text-muted">상황에 맞춰 질문이 달라집니다. 로그인 없이 바로 진단받을 수 있어요.</p>
         <div className="flex flex-col gap-3.5">
@@ -183,7 +224,7 @@ export default function DiagnosePage() {
           ))}
         </div>
         {minor ? (
-          <p className="mt-6 text-center text-[12px] text-muted">편하게 골라줘요. 정답은 없어요.</p>
+          <p className="mt-6 text-center text-[12.5px] text-muted">편하게 골라줘요. 정답은 없어요.</p>
         ) : (
           <div className="mt-6 rounded-xl border border-line bg-surface/60 p-3.5">
             <LegalEthicsNotice />
@@ -198,6 +239,7 @@ export default function DiagnosePage() {
     return (
       <div>
         <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
+        <StepIndicator phase="partner" meDone={hasProfileBirth} />
         <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
         <p className="mb-6 text-sm text-muted">알면 궁합·소통 팁을 더해드려요. <b className="text-ink">몰라도 괜찮아요</b> — 건너뛰어도 진단은 똑같이 정확해요.</p>
 
@@ -206,7 +248,7 @@ export default function DiagnosePage() {
 
         <label className="mb-1.5 block text-[13px] font-bold">상대 MBTI <span className="font-normal text-muted">(선택)</span></label>
         <div className="mb-1.5"><MbtiSelect value={partnerMbti} onChange={setPartnerMbti} ariaLabel="상대 MBTI" /></div>
-        <p className="mb-5 text-[11.5px] text-muted">상대 정보는 제3자 정보라 꼭 필요한 만큼만 받아요. MBTI·나이차는 참고 요소예요.</p>
+        <p className="mb-5 text-[12.5px] text-muted">상대 정보는 제3자 정보라 꼭 필요한 만큼만 받아요. MBTI·나이차는 참고 요소예요.</p>
 
         <button className="btn btn-primary" onClick={() => setPhase("survey")}>다음</button>
         <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
@@ -255,7 +297,9 @@ export default function DiagnosePage() {
 
   return (
     <div>
-      <button onClick={() => (qIndex > 0 ? setQIndex(qIndex - 1) : setPhase("partner"))} className="text-sm text-muted">← 이전</button>
+      <StepIndicator phase="survey" meDone={hasProfileBirth} />
+      <button onClick={() => (qIndex > 0 ? setQIndex(qIndex - 1) : setPhase("partner"))}
+        className="rounded-full bg-white/55 px-3 py-1.5 text-sm font-bold text-primaryDark backdrop-blur transition active:scale-95 hover:bg-white/75">← 이전</button>
       <div className="my-3 h-1.5 overflow-hidden rounded-full bg-line"
         role="progressbar" aria-label="설문 진행률" aria-valuemin={0} aria-valuemax={total} aria-valuenow={qIndex + 1}>
         <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500 ease-out"
@@ -274,15 +318,25 @@ export default function DiagnosePage() {
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">
-          {q.options!.map((opt) => (
-            <button key={opt.v} onClick={() => selectOption(q.id, opt.v)}
-              className={`rounded-[14px] border p-4 text-left text-base backdrop-blur transition active:scale-[0.99] ${
-                answers[q.id] === opt.v ? "border-primary bg-primarySoft font-bold" : "border-white/60 bg-white/60 hover:border-primary"
-              }`}>
-              {opt.label}
-              {opt.note && <span className="mt-0.5 block text-xs font-normal text-muted">{opt.note}</span>}
-            </button>
-          ))}
+          {q.options!.map((opt) => {
+            const selected = answers[q.id] === opt.v;
+            return (
+              <button key={opt.v} onClick={() => selectOption(q.id, opt.v)} aria-pressed={selected}
+                className={`flex items-start justify-between gap-3 rounded-[14px] border p-4 text-left text-base backdrop-blur transition active:scale-[0.99] ${
+                  selected ? "border-primary bg-primarySoft font-bold ring-1 ring-primary/40" : "border-white/60 bg-white/60 hover:border-primary"
+                }`}>
+                <span>
+                  {opt.label}
+                  {opt.note && <span className="mt-0.5 block text-xs font-normal text-muted">{opt.note}</span>}
+                </span>
+                {selected && (
+                  <span className="mt-0.5 flex items-center gap-1 text-[12.5px] font-bold text-primaryDark">
+                    <CheckIcon />선택됨
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

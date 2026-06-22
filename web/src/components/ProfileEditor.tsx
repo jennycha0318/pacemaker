@@ -77,7 +77,7 @@ export function ProfileEditor() {
       >
         {ATTACH.map((a) => <option key={a.v} value={a.v}>{a.label}</option>)}
       </select>
-      <p className="mb-3 mt-1.5 text-[11.5px] text-muted">MBTI·나이차는 참고 요소예요. 핵심 판단은 진단 신호를 기준으로 해요.</p>
+      <p className="mb-3 mt-1.5 text-[12.5px] text-muted">MBTI·나이차는 참고 요소예요. 핵심 판단은 진단 신호를 기준으로 해요.</p>
 
       <button className="btn btn-primary" onClick={save} disabled={status === "saving"}>
         {status === "saving" ? "저장 중…" : status === "saved" ? "저장됨 ✓" : "저장"}

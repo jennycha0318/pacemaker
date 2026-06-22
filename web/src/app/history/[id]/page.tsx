@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Report } from "@/components/Report";
+import { DeleteDiagnosisButton } from "@/components/DeleteDiagnosisButton";
 import type { Diagnosis } from "@/lib/diagnose/engine";
 import { STAGE_LABEL, type Stage } from "@/lib/diagnose/survey";
 
@@ -35,7 +36,10 @@ export default async function HistoryDetailPage({
 
   return (
     <div>
-      <Link href="/history" className="inline-flex items-center gap-1 rounded-full bg-white/55 px-3 py-1.5 text-sm font-bold text-primaryDark backdrop-blur">← 히스토리</Link>
+      <div className="flex items-center justify-between gap-2">
+        <Link href="/history" className="inline-flex items-center gap-1 rounded-full bg-white/55 px-3 py-1.5 text-sm font-bold text-primaryDark backdrop-blur">← 히스토리</Link>
+        <DeleteDiagnosisButton id={id} redirectTo="/history" />
+      </div>
       <p className="mb-3 mt-3 text-[13px] text-muted">
         {STAGE_LABEL[data.stage as Stage] ?? "진단"} · {fmt(data.created_at as string)}
       </p>

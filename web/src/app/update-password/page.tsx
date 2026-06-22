@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { PwToggle } from "@/components/PwToggle";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
@@ -13,6 +14,11 @@ export default function UpdatePasswordPage() {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+  const [showPw2, setShowPw2] = useState(false);
+
+  const pwHint = pw && pw.length < 6 ? "비밀번호는 6자 이상이어야 해요." : "";
+  const pw2Hint = pw2 && pw !== pw2 ? "두 비밀번호가 일치하지 않아요." : "";
 
   useEffect(() => {
     // 비밀번호 재설정 링크를 통해 들어온 경우에만 세션이 있음
@@ -63,11 +69,19 @@ export default function UpdatePasswordPage() {
     <div className="pt-4">
       <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">새 비밀번호 설정</h2>
       <p className="mb-6 text-sm text-muted">사용할 새 비밀번호를 입력해 주세요.</p>
-      <label className="mb-1.5 block text-[13px] font-bold">새 비밀번호</label>
-      <input className="field-input mb-3.5" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6자 이상" />
-      <label className="mb-1.5 block text-[13px] font-bold">새 비밀번호 확인</label>
-      <input className="field-input" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="다시 입력"
-        onKeyDown={(e) => e.key === "Enter" && update()} />
+      <label htmlFor="up-pw" className="mb-1.5 block text-[13px] font-bold">새 비밀번호</label>
+      <div className="relative">
+        <input id="up-pw" autoComplete="new-password" className="field-input pr-11" type={showPw ? "text" : "password"} value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6자 이상" />
+        <PwToggle shown={showPw} onClick={() => setShowPw((v) => !v)} />
+      </div>
+      <p className="min-h-[18px] mb-2 pt-1 text-[12.5px] text-warn">{pwHint}</p>
+      <label htmlFor="up-pw2" className="mb-1.5 block text-[13px] font-bold">새 비밀번호 확인</label>
+      <div className="relative">
+        <input id="up-pw2" autoComplete="new-password" className="field-input pr-11" type={showPw2 ? "text" : "password"} value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="다시 입력"
+          onKeyDown={(e) => e.key === "Enter" && update()} />
+        <PwToggle shown={showPw2} onClick={() => setShowPw2((v) => !v)} />
+      </div>
+      <p className="min-h-[18px] pt-1 text-[12.5px] text-warn">{pw2Hint}</p>
       <p className="min-h-[18px] py-1.5 text-[13px] text-bad">{err}</p>
       {ok && <p className="mb-2 text-[13px] text-good">{ok}</p>}
       <button className="btn btn-primary" onClick={update} disabled={loading || ready === null}>

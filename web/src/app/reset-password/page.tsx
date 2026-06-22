@@ -4,11 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const emailHint = email && !EMAIL_RE.test(email) ? "이메일 형식을 확인해 주세요. (예: you@example.com)" : "";
 
   async function send() {
     setErr(""); setOk("");
@@ -32,8 +36,9 @@ export default function ResetPasswordPage() {
     <div className="pt-4">
       <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">비밀번호 찾기</h2>
       <p className="mb-6 text-sm text-muted">가입한 이메일로 재설정 링크를 보내드려요.</p>
-      <label className="mb-1.5 block text-[13px] font-bold">이메일</label>
-      <input className="field-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+      <label htmlFor="rp-email" className="mb-1.5 block text-[13px] font-bold">이메일</label>
+      <input id="rp-email" autoComplete="email" className="field-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+      <p className="min-h-[18px] pt-1 text-[12.5px] text-warn">{emailHint}</p>
       <p className="min-h-[18px] py-1.5 text-[13px] text-bad">{err}</p>
       {ok && <p className="mb-2 text-[13px] text-good">{ok}</p>}
       <button className="btn btn-primary" onClick={send} disabled={loading}>

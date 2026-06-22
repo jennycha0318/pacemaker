@@ -79,7 +79,7 @@ export function TabBar() {
                   {t.icon}
                 </svg>
               </span>
-              <span className={`text-[11.5px] font-bold ${active ? "text-primary" : "text-muted"}`}>{t.label}</span>
+              <span className={`text-[12.5px] font-bold ${active ? "text-primary" : "text-muted"}`}>{t.label}</span>
             </Link>
           );
         })}

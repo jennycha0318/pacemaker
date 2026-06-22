@@ -27,7 +27,7 @@ export function CrisisResources({ minor = false }: { minor?: boolean }) {
             <span className="text-muted">· 24시간</span>
           </li>
         </ul>
-        <p className="mt-2 text-[12px] text-muted">
+        <p className="mt-2 text-[12.5px] text-muted">
           너무 힘들어서 안 좋은 생각이 들 때도, 꼭 위 번호로 먼저 이야기해 줘요. 당신은 혼자가 아니에요.
         </p>
       </div>
@@ -55,7 +55,7 @@ export function CrisisResources({ minor = false }: { minor?: boolean }) {
           <a href="sms:%231388" className="font-bold underline">#1388</a>
         </li>
       </ul>
-      <p className="mt-2 text-[11px] text-muted">청소년 상담은 24시간 365일 운영돼요.</p>
+      <p className="mt-2 text-[12.5px] text-muted">청소년 상담은 24시간 365일 운영돼요.</p>
     </div>
   );
 }
@@ -77,7 +77,7 @@ export function MinorSupportBanner() {
 // 외도·학대 등 법적·윤리 사전 고지 (대한법률구조공단 무료 상담 링크)
 export function LegalEthicsNotice({ compact = false }: { compact?: boolean }) {
   return (
-    <p className={compact ? "text-[11.5px] leading-relaxed text-muted" : "text-xs leading-relaxed text-muted"}>
+    <p className={compact ? "text-[12.5px] leading-relaxed text-muted" : "text-xs leading-relaxed text-muted"}>
       배우자·연인이 있는 상태에서의 외도, 정신적·육체적 학대 등은 <b>법적·윤리적 문제</b>가 될 수 있어요.
       도움이 필요하면{" "}
       <a

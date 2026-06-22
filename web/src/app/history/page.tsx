@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { STAGE_LABEL, type Stage } from "@/lib/diagnose/survey";
 import type { Diagnosis } from "@/lib/diagnose/engine";
+import { DeleteDiagnosisButton } from "@/components/DeleteDiagnosisButton";
 
 export const dynamic = "force-dynamic";
 
@@ -64,24 +65,24 @@ export default async function HistoryPage() {
           {rows.map((r) => {
             const color = r.score >= 65 ? "#4fa3a2" : r.score >= 45 ? "#c79a4e" : "#b96b8f";
             return (
-              <li key={r.id}>
-                <Link href={`/history/${r.id}`} className="flex items-center gap-3.5 rounded-[18px] border border-white/60 bg-white/55 px-4 py-3.5 backdrop-blur transition active:scale-[0.98] hover:border-primary">
+              <li key={r.id} className="relative">
+                <Link href={`/history/${r.id}`} className="flex items-center gap-3.5 rounded-[18px] border border-white/60 bg-white/55 py-3.5 pl-4 pr-12 backdrop-blur transition active:scale-[0.98] hover:border-primary">
                   <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-xl text-lg font-bold"
                     style={{ color, background: `${color}1a` }}>{r.score}</span>
                   <span className="flex min-w-0 flex-1 flex-col">
                     <b className="text-[14.5px]">{STAGE_LABEL[r.stage] ?? "진단"} · {r.result?.scoreTitle ?? "결과"}</b>
                     <span className="text-[12.5px] text-primaryDark">{r.result?.plan?.when ?? ""}</span>
-                    <span className="mt-0.5 flex items-center gap-1 text-[12px] text-ink/70">
+                    <span className="mt-0.5 flex items-center gap-1 text-[12.5px] text-ink/70">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9h18M8 2.5v4M16 2.5v4" />
                       </svg>
                       {fmt(r.created_at)}
                     </span>
                   </span>
-                  <svg className="shrink-0 text-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M9 6l6 6-6 6" />
-                  </svg>
                 </Link>
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                  <DeleteDiagnosisButton id={r.id} />
+                </span>
               </li>
             );
           })}
