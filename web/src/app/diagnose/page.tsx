@@ -281,7 +281,7 @@ export default function DiagnosePage() {
   // ── 내 정보 (생년 + 내 MBTI) ──
   if (phase === "me") {
     return (
-      <div>
+      <div className="min-h-[calc(100svh-9rem)]">
         <Link href="/" className="text-sm text-muted">← 처음으로</Link>
         <StepIndicator phase="me" meDone={hasProfileBirth} />
         <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
@@ -302,7 +302,7 @@ export default function DiagnosePage() {
   // ── 상황 선택 ──
   if (phase === "stage") {
     return (
-      <div>
+      <div className="min-h-[calc(100svh-9rem)]">
         {hasProfileBirth
           ? <Link href="/" className="text-sm text-muted">← 처음으로</Link>
           : <button onClick={() => setPhase("me")} className="text-sm text-muted">← 내 정보</button>}
@@ -335,7 +335,7 @@ export default function DiagnosePage() {
   // ── S1 외도 가치기반 일시정지(가치 일시정지, 계속 가능) ──
   if (phase === "affair") {
     return (
-      <div>
+      <div className="min-h-[calc(100svh-9rem)]">
         <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
         <StepIndicator phase="stage" meDone={hasProfileBirth} />
         {affairStep === 0 ? (
@@ -379,7 +379,7 @@ export default function DiagnosePage() {
   // ── 상대 정보 (선택) ──
   if (phase === "partner") {
     return (
-      <div>
+      <div className="min-h-[calc(100svh-9rem)]">
         <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
         <StepIndicator phase="partner" meDone={hasProfileBirth} />
         <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
@@ -475,7 +475,7 @@ export default function DiagnosePage() {
   const total = survey.length;
 
   return (
-    <div>
+    <div className="min-h-[calc(100svh-9rem)]">
       <StepIndicator phase="survey" meDone={hasProfileBirth} />
       <button onClick={() => (qIndex > 0 ? setQIndex(qIndex - 1) : setPhase("partner"))}
         className="rounded-full bg-white/55 px-3 py-1.5 text-sm font-bold text-primaryDark backdrop-blur transition active:scale-95 hover:bg-white/75">← 이전</button>
@@ -489,8 +489,7 @@ export default function DiagnosePage() {
 
       {q.type === "text" ? (
         <div>
-          {q.desc && <p className="-mt-2 mb-1.5 text-sm text-muted">{q.desc}</p>}
-          <p className="mb-3.5 text-[13px] text-muted">(선택) 자세히 적을수록 더 정확해져요. 비워둬도 괜찮아요.</p>
+          {q.desc && <p className="-mt-2 mb-3.5 text-sm text-muted">{q.desc}</p>}
           <textarea className="field-input min-h-[140px] resize-y leading-relaxed" placeholder={q.placeholder}
             aria-label={q.title} value={free} onChange={(e) => setFree(e.target.value)} />
           <button className="btn btn-primary mt-3.5" onClick={() => finish({ ...answers, freeText: free })}>진단하기</button>

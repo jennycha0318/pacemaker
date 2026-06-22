@@ -45,7 +45,7 @@ const FREE_TEXT_Q: Question = {
   id: "freeText",
   type: "text",
   title: "상황을 자유롭게 적어주세요",
-  desc: "무슨 일이 있었는지 적어두면, 핵심 키워드(예: 차단·잠수·새로운 사람 등)를 결과에 반영해요. (선택)",
+  desc: "자세히 적을수록 더 정확한 분석이 가능해요. (선택)",
   placeholder: "예) 일이 바빠서 소홀했고, 마지막에 크게 싸우고 헤어졌어요…",
 };
 const ABUSE_Q: Question = {

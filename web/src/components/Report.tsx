@@ -1,5 +1,5 @@
 import type { Diagnosis } from "@/lib/diagnose/engine";
-import { CrisisResources, LegalEthicsNotice, MinorSupportBanner } from "@/components/SupportNotices";
+import { CrisisResources, LegalEthicsNotice } from "@/components/SupportNotices";
 import { ShareButton } from "@/components/ShareButton";
 import { scoreColor, scoreBadge, toneColor } from "@/lib/diagnose/colors";
 
@@ -16,9 +16,6 @@ export function Report({ d }: { d: Diagnosis }) {
 
   return (
     <div className="flex flex-col">
-      {/* 청소년(미성년) 지지 배너 — 항상 최상단 */}
-      {d.minor && <MinorSupportBanner />}
-
       {/* ── 그룹 1: 결과 (위기 → 점수) ── */}
       <section className="flex flex-col gap-3.5">
         <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">결과</p>

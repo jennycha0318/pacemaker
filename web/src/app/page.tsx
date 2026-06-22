@@ -40,20 +40,18 @@ export default async function LandingPage() {
         </span>
       </div>
 
-      {/* 헤드라인 — 애니메이션 그라데이션 테두리 글래스 프레임 */}
-      <div className="pm-shimmer-border pm-fade-up rounded-[26px] bg-gradient-to-r from-primary via-accent to-primary p-[2px] shadow-[0_14px_38px_rgba(96,130,188,0.22)]">
-        <div className="rounded-[24px] bg-white/80 px-6 py-7 text-center backdrop-blur-xl">
-          <h1 className="text-[30px] font-bold leading-[1.4] tracking-tight">
-            연애의 결정적 순간,
-            <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">타이밍</span>을 분석해 드립니다
-          </h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-muted">
-            내 상황과 상대 성향 데이터를 분석해
-            <br />
-            성공 확률이 높아지는 <b className="text-ink">타이밍과 행동</b>을 제안
-          </p>
-        </div>
+      {/* 헤드라인 (상자 없이) */}
+      <div className="pm-fade-up text-center">
+        <h1 className="text-[30px] font-bold leading-[1.4] tracking-tight">
+          연애의 결정적 순간,
+          <br />
+          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">타이밍</span>을 분석해 드립니다
+        </h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted">
+          내 상황과 상대 성향 데이터를 분석해
+          <br />
+          성공 확률이 높아지는 <b className="text-ink">타이밍과 행동</b>을 제안
+        </p>
       </div>
 
       {/* 특징 카드 */}

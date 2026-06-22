@@ -47,7 +47,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="fixed bottom-0 left-1/2 z-20 w-full max-w-app -translate-x-1/2 border-t border-white/50 bg-white/65 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
+      className="fixed bottom-0 left-1/2 z-20 w-full max-w-app -translate-x-1/2 border-t border-white/50 bg-white/65 pb-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.75rem))] backdrop-blur-xl"
     >
       <div className="flex px-2 pt-1.5">
         {TABS.map((t) => {
