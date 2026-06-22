@@ -32,10 +32,19 @@ export default async function LandingPage() {
       </p>
       <Link href="/diagnose" className="btn btn-primary block text-center">무료로 진단 시작 (로그인 없이)</Link>
       <Link href="/login" className="btn btn-ghost mt-3 block text-center">로그인 · 회원가입</Link>
-      <ul className="mt-8 flex flex-col gap-3 text-sm">
-        <li className="card border-2 border-primary/40">실제 연애 의사결정·성공/실패 패턴을 데이터화한 분석</li>
-        <li className="card">개인별 성향과 상황에 맞춤화</li>
-        <li className="card">실행 타이밍·방법·문구까지 제안하여 성공 확률 향상</li>
+      <ul className="mt-8 flex flex-col gap-3.5 text-[15px]">
+        {[
+          "실제 연애 의사결정·성공/실패 패턴을 데이터화한 분석",
+          "개인별 성향과 상황에 맞춤화",
+          "실행 타이밍·방법·문구까지 제안하여 성공 확률 향상",
+        ].map((t) => (
+          <li key={t} className="flex items-start gap-2.5">
+            <svg className="mt-0.5 shrink-0 text-accent" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{t}</span>
+          </li>
+        ))}
       </ul>
     </div>
   );
