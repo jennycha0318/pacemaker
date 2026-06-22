@@ -19,6 +19,9 @@ const STAGES: { v: Stage; name: string; note: string }[] = [
 type Phase = "me" | "stage" | "partner" | "survey" | "result";
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "guest";
 
+// 게스트 진단 결과 임시 보존 키(가입/로그인 직후 /diagnose 재진입 시 복원·저장)
+const PENDING_KEY = "pacemaker:pendingDiagnosis";
+
 // ── 통합 진행 스텝(대단계) ──
 // me/stage/partner/survey 4단계의 위치를 글래스 톤 세그먼트로 표시.
 // 로그인으로 '내 정보'를 건너뛴 경우(meDone) 1번 단계는 done 처리.
@@ -82,10 +85,45 @@ export default function DiagnosePage() {
   const advancingRef = useRef(false); // 설문 빠른 연타 방지
 
   // 로그인 유저면 프로필 로드 → 생년 알면 '내 정보' 단계 생략
+  // 로그인 + localStorage에 게스트 진단 결과가 있으면: 저장 후 결과 화면으로 복원(우선)
   useEffect(() => {
     (async () => {
       try {
         const supabase = createClient();
+        const { data } = await supabase.auth.getUser();
+        const user = data?.user ?? null;
+
+        // ── 게스트 결과 복원(로그인 상태에서만) ──
+        if (user) {
+          let pending: { stage: Stage; result: Diagnosis } | null = null;
+          try {
+            const raw = localStorage.getItem(PENDING_KEY);
+            if (raw) pending = JSON.parse(raw);
+          } catch {
+            pending = null; // 파싱 실패 — 무시
+          }
+          if (pending && pending.result && pending.stage) {
+            try {
+              const d = pending.result;
+              await supabase.from("diagnoses").insert({
+                user_id: user.id,
+                stage: pending.stage,
+                score: d.score,
+                result: d,
+              });
+            } catch {
+              // insert 실패해도 결과는 보여줌(아래에서 복원)
+            }
+            try { localStorage.removeItem(PENDING_KEY); } catch {}
+            setStage(pending.stage);
+            setResult(pending.result);
+            setSaveStatus("saved");
+            setPhase("result");
+            setLoadingProfile(false);
+            return; // pending 복원이 프로필 기반 phase 결정보다 우선
+          }
+        }
+
         const p = await getProfile(supabase);
         if (p) {
           if (p.birthYear) { setMyBirthYear(String(p.birthYear)); setHasProfileBirth(true); }
@@ -111,6 +149,12 @@ export default function DiagnosePage() {
       const { data } = await supabase.auth.getUser();
       const user = data?.user ?? null;
       if (!user) {
+        // 게스트: 결과를 localStorage에 보존(가입/로그인 후 /diagnose 재진입 시 복원)
+        try {
+          localStorage.setItem(PENDING_KEY, JSON.stringify({ stage: s, result: d }));
+        } catch {
+          // 저장 실패는 무시(시크릿 모드 등)
+        }
         setSaveStatus("guest");
         return;
       }
@@ -248,7 +292,17 @@ export default function DiagnosePage() {
 
         <label className="mb-1.5 block text-[13px] font-bold">상대 MBTI <span className="font-normal text-muted">(선택)</span></label>
         <div className="mb-1.5"><MbtiSelect value={partnerMbti} onChange={setPartnerMbti} ariaLabel="상대 MBTI" /></div>
-        <p className="mb-5 text-[12.5px] text-muted">상대 정보는 제3자 정보라 꼭 필요한 만큼만 받아요. MBTI·나이차는 참고 요소예요.</p>
+        <p className="mb-3 text-[12.5px] text-muted">상대 정보는 제3자 정보라 꼭 필요한 만큼만 받아요. MBTI·나이차는 참고 요소예요.</p>
+
+        <details className="mb-5 rounded-xl border border-white/60 bg-white/45 px-3.5 py-2.5 backdrop-blur">
+          <summary className="cursor-pointer list-none text-[12.5px] font-bold text-primaryDark marker:content-none">입력하면 뭐가 달라지나요?</summary>
+          <ul className="mt-2 space-y-1 text-[12px] leading-relaxed text-muted">
+            <li>· 상대 MBTI → 소통·메시지 톤 팁</li>
+            <li>· 나·상대 MBTI → 궁합 한 줄</li>
+            <li>· 출생연도 → 나이차 참고</li>
+          </ul>
+          <p className="mt-2 text-[11.5px] text-muted/80">모두 점수엔 미반영, 참고용이에요.</p>
+        </details>
 
         <button className="btn btn-primary" onClick={() => setPhase("survey")}>다음</button>
         <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>

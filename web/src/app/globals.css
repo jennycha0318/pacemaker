@@ -58,6 +58,7 @@ h1, h2, h3, h4, .font-title {
     @apply text-white;
     background-image: linear-gradient(135deg, #80a1d4, #75c9c8);
     box-shadow: 0 10px 24px rgba(96, 130, 188, 0.3);
+    text-shadow: 0 1px 2px rgba(60, 70, 110, 0.28);
   }
   /* 보조: 글래스 */
   .btn-ghost {

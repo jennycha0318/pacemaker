@@ -1,12 +1,14 @@
 import type { Diagnosis } from "@/lib/diagnose/engine";
 import { CrisisResources, LegalEthicsNotice, MinorSupportBanner } from "@/components/SupportNotices";
+import { ShareButton } from "@/components/ShareButton";
+import { scoreColor, scoreBadge, toneColor } from "@/lib/diagnose/colors";
 
 export function Report({ d }: { d: Diagnosis }) {
-  const color = d.score >= 65 ? "#4fa3a2" : d.score >= 45 ? "#c79a4e" : "#b96b8f";
-  const badge = d.score >= 65 ? "지금이 좋은 타이밍" : d.score >= 45 ? "조금 더 준비가 필요" : "지금은 기다릴 때";
+  const color = scoreColor(d.score);
+  const badge = scoreBadge(d.score);
   const C = 2 * Math.PI * 52;
   const offset = C * (1 - d.score / 100);
-  const planColor = d.plan.tone === "good" ? "#4fa3a2" : d.plan.tone === "warn" ? "#c79a4e" : "#b96b8f";
+  const planColor = toneColor(d.plan.tone);
   const factors = [...d.factors]
     .filter((f) => f.delta !== 0)
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
@@ -81,16 +83,31 @@ export function Report({ d }: { d: Diagnosis }) {
           </ul>
         </div>
 
-        {/* 주의 */}
+        {/* 주의 — 3개 초과 시 나머지는 <details>로 접기 (서버 컴포넌트 유지) */}
         <div className="card">
           <p className="mb-3.5 text-xs font-bold uppercase tracking-wide text-primaryDark">이것만은 주의하세요</p>
           <ul className="flex flex-col gap-2.5">
-            {d.risks.map((r, i) => (
+            {d.risks.slice(0, 3).map((r, i) => (
               <li key={i} className="flex gap-2.5 rounded-xl border border-[#f0dbe6] bg-[#faf1f6] px-3.5 py-3 text-sm">
                 <span className="font-bold text-bad">•</span>{r}
               </li>
             ))}
           </ul>
+          {d.risks.length > 3 && (
+            <details className="group mt-2.5">
+              <summary className="cursor-pointer list-none text-[13px] font-bold text-primaryDark">
+                <span className="group-open:hidden">주의사항 {d.risks.length - 3}개 더 보기</span>
+                <span className="hidden group-open:inline">접기</span>
+              </summary>
+              <ul className="mt-2.5 flex flex-col gap-2.5">
+                {d.risks.slice(3).map((r, i) => (
+                  <li key={i} className="flex gap-2.5 rounded-xl border border-[#f0dbe6] bg-[#faf1f6] px-3.5 py-3 text-sm">
+                    <span className="font-bold text-bad">•</span>{r}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
       </section>
 
@@ -119,11 +136,26 @@ export function Report({ d }: { d: Diagnosis }) {
           </ul>
         </div>
 
-        {/* 메시지 */}
-        <div className="card bg-gradient-to-br from-[#eaeef8] to-[#e7f4f3]">
-          <p className="mb-3.5 text-xs font-bold uppercase tracking-wide text-primaryDark">{d.msgLabel}</p>
+        {/* 메시지 — hold(보류·주의)와 msg(예시)를 아이콘·톤으로 시각 구분 */}
+        <div className={`card ${d.hold ? "bg-gradient-to-br from-[#faf1f6] to-[#f3e9f0]" : "bg-gradient-to-br from-[#eaeef8] to-[#e7f4f3]"}`}>
+          <p className="mb-3.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primaryDark">
+            {d.hold ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-bad">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-primary">
+                <path d="M22 2 11 13" />
+                <path d="M22 2 15 22l-4-9-9-4 20-7z" />
+              </svg>
+            )}
+            {d.msgLabel}
+          </p>
           {d.hold ? (
-            <div className="rounded-xl border border-dashed border-primary bg-surface p-4 text-sm">{d.hold}</div>
+            <div className="rounded-xl border border-dashed border-bad bg-[#faf1f6] p-4 text-sm">{d.hold}</div>
           ) : (
             <div className="whitespace-pre-wrap rounded-[14px_14px_14px_4px] border border-line bg-surface p-4 text-[15px] leading-relaxed">{d.msg}</div>
           )}
@@ -154,6 +186,11 @@ export function Report({ d }: { d: Diagnosis }) {
           </div>
         )}
       </section>
+
+      {/* 결과 공유 — 진단 결과·히스토리 상세 양쪽에서 사용 */}
+      <div className="mt-7">
+        <ShareButton d={d} />
+      </div>
 
       {/* 법적·윤리 고지 (외도·학대) — 청소년에겐 비노출(지지 중심) */}
       {!d.minor && <div className="mt-7"><LegalEthicsNotice compact /></div>}

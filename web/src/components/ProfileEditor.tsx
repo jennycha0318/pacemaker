@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getProfile, saveProfile } from "@/lib/profile";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
@@ -19,6 +19,14 @@ export function ProfileEditor() {
   const [mbti, setMbti] = useState("");
   const [attachment, setAttachment] = useState("");
   const [status, setStatus] = useState<Status>("loading");
+  const [showSavedBanner, setShowSavedBanner] = useState(false);
+
+  // 로드된 초기값(저장된 상태)을 보관해 dirty 계산에 사용
+  const initialRef = useRef({ birthYear: "", mbti: "", attachment: "" });
+  const dirty =
+    birthYear !== initialRef.current.birthYear ||
+    mbti !== initialRef.current.mbti ||
+    attachment !== initialRef.current.attachment;
 
   useEffect(() => {
     (async () => {
@@ -26,9 +34,13 @@ export function ProfileEditor() {
         const supabase = createClient();
         const p = await getProfile(supabase);
         if (p) {
-          setBirthYear(p.birthYear ? String(p.birthYear) : "");
-          setMbti(p.mbti ?? "");
-          setAttachment(p.attachment ?? "");
+          const by = p.birthYear ? String(p.birthYear) : "";
+          const mb = p.mbti ?? "";
+          const at = p.attachment ?? "";
+          setBirthYear(by);
+          setMbti(mb);
+          setAttachment(at);
+          initialRef.current = { birthYear: by, mbti: mb, attachment: at };
         }
       } catch {
         // 무시 — 빈 폼으로 시작
@@ -36,6 +48,24 @@ export function ProfileEditor() {
       setStatus("idle");
     })();
   }, []);
+
+  // 미저장 이탈 경고: dirty일 때만 beforeunload 핸들러 등록
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
+
+  // 저장 성공 배너: 약 2.5초 후 사라짐
+  useEffect(() => {
+    if (!showSavedBanner) return;
+    const t = setTimeout(() => setShowSavedBanner(false), 2500);
+    return () => clearTimeout(t);
+  }, [showSavedBanner]);
 
   const touch = () => setStatus((s) => (s === "saved" ? "idle" : s));
 
@@ -48,7 +78,10 @@ export function ProfileEditor() {
         mbti: mbti || null,
         attachment: attachment || null,
       });
+      // 저장 성공 — 현재값을 초기값으로 갱신해 dirty 해제
+      initialRef.current = { birthYear, mbti, attachment };
       setStatus("saved");
+      setShowSavedBanner(true);
     } catch {
       setStatus("error");
     }
@@ -61,6 +94,16 @@ export function ProfileEditor() {
   return (
     <div className="card">
       <p className="mb-3 text-xs font-bold uppercase tracking-wide text-primaryDark">내 정보 (진단 개인화)</p>
+
+      {showSavedBanner && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-3 rounded bg-primarySoft px-3 py-2 text-center text-[13px] font-bold text-primaryDark"
+        >
+          저장됐어요 ✓
+        </div>
+      )}
 
       <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
       <div className="mb-3.5"><YearSelect value={birthYear} onChange={(v) => { setBirthYear(v); touch(); }} /></div>
