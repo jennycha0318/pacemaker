@@ -16,11 +16,15 @@ const STAGES: { v: Stage; name: string; note: string }[] = [
   { v: "breakup", name: "이별 후", note: "재회하고 싶어요" },
 ];
 
-type Phase = "me" | "stage" | "partner" | "survey" | "result";
+type Phase = "me" | "stage" | "affair" | "partner" | "survey" | "result";
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "guest";
 
 // 게스트 진단 결과 임시 보존 키(가입/로그인 직후 /diagnose 재진입 시 복원·저장)
 const PENDING_KEY = "pacemaker:pendingDiagnosis";
+// S2 강박 재진단 쿨다운: 진단 시각 기록(부드러운 안내, 비차단)
+const DIAG_HISTORY_KEY = "pacemaker:diagHistory";
+// S3 차단 후 재진단 우회 경고: 마지막 '차단' 응답 시각
+const BLOCKED_AT_KEY = "pacemaker:blockedAt";
 
 // ── 통합 진행 스텝(대단계) ──
 // me/stage/partner/survey 4단계의 위치를 글래스 톤 세그먼트로 표시.
@@ -74,12 +78,17 @@ export default function DiagnosePage() {
   const [myBirthYear, setMyBirthYear] = useState("");
   const [myMbti, setMyMbti] = useState("");
   const [stage, setStage] = useState<Stage>("crush");
+  const [affair, setAffair] = useState<"yes" | "no" | "">(""); // S1 외도 가치 일시정지 플래그(engine이 a.affair 읽음)
+  const [affairStep, setAffairStep] = useState<0 | 1>(0); // affair 게이트: 0=질문, 1=가치 일시정지 안내
   const [partnerBirthYear, setPartnerBirthYear] = useState("");
   const [partnerMbti, setPartnerMbti] = useState("");
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [free, setFree] = useState("");
   const [result, setResult] = useState<Diagnosis | null>(null);
+  const [overDiagnose, setOverDiagnose] = useState(false); // S2 같은 stage 24h 내 3회 이상
+  const [showOverDiagnose, setShowOverDiagnose] = useState(true); // 안내 닫기
+  const [blockedBypass, setBlockedBypass] = useState(false); // S3 차단 우회 경고
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const savingRef = useRef(false);    // 중복 저장(insert) 방지
   const advancingRef = useRef(false); // 설문 빠른 연타 방지
@@ -175,8 +184,49 @@ export default function DiagnosePage() {
   function finish(ans: Answers) {
     const s = stage;
     const merged: Answers = { ...ans, myMbti, partnerMbti, myBirthYear, partnerBirthYear };
+    if (affair) merged.affair = affair; // S1: engine이 a.affair 읽음
     const d = diagnose(s, merged);
     d.minor = minor; // 생년 기반 청소년 모드
+
+    // ── S2 강박 재진단 쿨다운: 진단 시각 기록 + 같은 stage 24h 내 3회 이상 감지 ──
+    let overDiag = false;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem(DIAG_HISTORY_KEY);
+        const hist: { stage: Stage; ts: number }[] = raw ? JSON.parse(raw) : [];
+        const now = Date.now();
+        const dayAgo = now - 24 * 60 * 60 * 1000;
+        // 같은 stage 24h 내 기존 기록 수 (이번 진단 포함 시 3회 이상)
+        const recentSame = hist.filter((h) => h.stage === s && h.ts >= dayAgo).length;
+        overDiag = recentSame + 1 >= 3;
+        const next = [...hist, { stage: s, ts: now }].slice(-50); // 무한 증가 방지
+        window.localStorage.setItem(DIAG_HISTORY_KEY, JSON.stringify(next));
+      } catch {
+        // 무시
+      }
+    }
+    setOverDiagnose(overDiag);
+    setShowOverDiagnose(true);
+
+    // ── S3 차단 후 재진단 우회 경고(breakup 전용, 비차단) ──
+    let bypass = false;
+    if (s === "breakup" && typeof window !== "undefined") {
+      try {
+        if (merged.contact === "blocked") {
+          // 차단 응답 → 시각 저장
+          window.localStorage.setItem(BLOCKED_AT_KEY, String(Date.now()));
+        } else {
+          // 차단 아님인데 최근 48h 내 차단 기록 있으면 우회로 간주
+          const raw = window.localStorage.getItem(BLOCKED_AT_KEY);
+          const blockedAt = raw ? Number(raw) : 0;
+          if (blockedAt && Date.now() - blockedAt <= 48 * 60 * 60 * 1000) bypass = true;
+        }
+      } catch {
+        // 무시
+      }
+    }
+    setBlockedBypass(bypass);
+
     setResult(d);
     setPhase("result");
     saveDiagnosis(d, s);
@@ -211,7 +261,11 @@ export default function DiagnosePage() {
 
   function pickStage(s: Stage) {
     setStage(s); setAnswers({}); setQIndex(0); setFree("");
-    setPartnerBirthYear(""); setPartnerMbti(""); setPhase("partner");
+    setPartnerBirthYear(""); setPartnerMbti("");
+    setAffair(""); setAffairStep(0);
+    // S1: 썸/이별은 외도 가치 일시정지 게이트를 먼저, 연애 중은 기존대로 상대 단계로
+    if (s === "crush" || s === "breakup") setPhase("affair");
+    else setPhase("partner");
   }
 
   function reset() {
@@ -278,6 +332,50 @@ export default function DiagnosePage() {
     );
   }
 
+  // ── S1 외도 가치기반 일시정지(가치 일시정지, 계속 가능) ──
+  if (phase === "affair") {
+    return (
+      <div>
+        <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
+        <StepIndicator phase="stage" meDone={hasProfileBirth} />
+        {affairStep === 0 ? (
+          <>
+            <h2 className="mb-1.5 mt-2 text-[26px] font-bold leading-snug tracking-tight">한 가지만 확인할게요</h2>
+            <p className="mb-6 text-sm text-muted">상황에 따라 조심스럽게 안내드릴 게 있어서요.</p>
+            <div className="card mb-6">
+              <p className="text-[15.5px] font-bold leading-relaxed text-ink">
+                지금 배우자나 사귀는 사람이 있는 상태에서, 그 사람이 ‘아닌’ 다른 상대에 대한 고민인가요?
+              </p>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <button className="btn btn-primary"
+                onClick={() => { setAffair("no"); setPhase("partner"); }}>아니에요</button>
+              <button className="btn btn-ghost"
+                onClick={() => setAffairStep(1)}>네, 그래요</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">잠깐만요</h2>
+            <div className="card mb-4">
+              <p className="text-[14.5px] leading-relaxed text-ink">
+                지금 다른 관계가 있는 상태에서의 새로운 관계·재회는 배우자·연인, 그리고 관련된 사람들에게 깊은 상처가 될 수 있어요. 법적·윤리적 문제가 될 수도 있어요.
+              </p>
+            </div>
+            <div className="mb-6 rounded-xl border border-line bg-surface/60 p-3.5">
+              <LegalEthicsNotice />
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <Link href="/" className="btn btn-primary block text-center">그만두기</Link>
+              <button className="btn btn-ghost"
+                onClick={() => { setAffair("yes"); setPhase("partner"); }}>그래도 진행</button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
   // ── 상대 정보 (선택) ──
   if (phase === "partner") {
     return (
@@ -331,6 +429,33 @@ export default function DiagnosePage() {
             <div className="flex gap-2">
               <Link href="/signup" className="btn btn-primary flex-1 text-center">회원가입</Link>
               <Link href="/login" className="btn btn-ghost flex-1 text-center">로그인</Link>
+            </div>
+          </div>
+        )}
+
+        {/* S3 차단 후 재진단 우회 경고(비차단) */}
+        {blockedBypass && (
+          <div className="mb-4 rounded-2xl border border-warn/40 bg-warn/10 p-4">
+            <p className="text-sm font-bold text-ink">얼마 전 ‘상대가 차단했다’고 하셨어요</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-muted">
+              답을 바꿔도 상대의 차단 상태는 달라지지 않아요. 지금은 거리를 두는 게 안전해요.
+            </p>
+          </div>
+        )}
+
+        {/* S2 강박 재진단 쿨다운 안내(글래스, 비차단, 닫기 가능) */}
+        {overDiagnose && showOverDiagnose && (
+          <div className="mb-4 rounded-2xl border border-white/60 bg-white/55 p-4 backdrop-blur">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-ink">하루에 여러 번 진단하고 있어요</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-muted">
+                  마음이 많이 불안하다는 신호일 수 있어요. 잠시 쉬어가도 괜찮아요. 결과는 크게 달라지지 않아요.
+                </p>
+              </div>
+              <button onClick={() => setShowOverDiagnose(false)}
+                className="shrink-0 rounded-full px-2 py-1 text-xs font-bold text-muted transition hover:bg-white/70"
+                aria-label="안내 닫기">닫기</button>
             </div>
           </div>
         )}

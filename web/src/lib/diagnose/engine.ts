@@ -32,7 +32,43 @@ function addMap(f: Factor[], map: Map, key: string) {
 const sum = (f: Factor[]) => f.reduce((t, x) => t + x.delta, 0);
 const clamp = (n: number) => Math.max(3, Math.min(97, Math.round(n)));
 
+// 학대(통제·위협·폭력) 신고 시 — 점수 엔진을 우회하고 안전 우선 결과를 즉시 반환.
+// plan 포함해 완성형으로 만들어, diagnose() 래퍼의 makePlan/computePersonality 덮어쓰기를 피한다.
+function safetyDiagnosis(): Diagnosis {
+  return {
+    scoreTitle: "지금은 안전이 가장 중요해요",
+    score: 8,
+    factors: [],
+    reason: "상대의 통제·위협·폭력이 있었다면, 지금 가장 중요한 건 ‘재회’나 ‘관계’가 아니라 당신의 안전이에요. 이건 당신 잘못이 아니에요.",
+    actions: [
+      { t: "전문기관과 먼저 이야기", d: "여성긴급전화 1366(24시간)·경찰 112. 혼자 판단하지 말고 도움을 받으세요." },
+      { t: "안전 계획 세우기", d: "신뢰할 수 있는 사람에게 알리고, 위험한 상황에선 즉시 112." },
+      { t: "재접촉은 보류", d: "가해 상대와의 재접촉은 위험을 키울 수 있어요. 지금은 거리두기가 안전해요." },
+    ],
+    risks: [
+      "통제·위협·폭력은 시간이 지나도 반복되는 경우가 많아요.",
+      "‘이번엔 다를 거야’라는 기대보다 당신의 안전을 먼저 지켜주세요.",
+    ],
+    msgLabel: "지금은 메시지보다 도움을",
+    hold: "지금은 연락 문구를 고민할 때가 아니라, 안전을 확보하고 전문기관의 도움을 받을 때예요. 위급하면 112.",
+    plan: {
+      when: "지금은 안전 확보가 먼저예요",
+      tone: "bad",
+      channel: "전문기관 상담(1366 / 112)",
+      steps: [
+        { time: "지금", action: "위급하면 112. 1366(여성긴급전화)에 먼저 상담하세요." },
+        { time: "이후", action: "신뢰할 수 있는 사람과 안전 계획을 세우세요." },
+      ],
+    },
+    needsSupport: true,
+  };
+}
+
 export function diagnose(stage: Stage, a: Answers): Diagnosis {
+  // 안전 우선 — dating/breakup에서 학대 신고 시 점수 엔진·plan·compat 모두 건너뛴다.
+  if ((stage === "dating" || stage === "breakup") && a.abuse === "yes") {
+    return safetyDiagnosis();
+  }
   let res: Diagnosis;
   if (stage === "crush") res = diagnoseCrush(a);
   else if (stage === "dating") res = diagnoseDating(a);
@@ -153,7 +189,10 @@ function diagnoseBreakup(a: Answers): Diagnosis {
   addMap(f, { conflict: [-4, "잦은 다툼이 원인"], drift: [-8, "권태·소원함이 원인 (회복 난도↑)"], personality: [-10, "성격 차이가 원인 (구조적)"], external: [13, "환경적 이유 (회복 가능성↑)"], other_person: [-16, "상대 변심 (난도 매우 높음)"] }, a.reason);
   addMap(f, { none: [6, "깔끔한 거리두기 중"], occasional: [3, "가벼운 연락 유지"], frequent: [-8, "과한 연락 (여유 없어 보임)"], fighting: [-20, "재연락이 다툼으로 (악순환)"], blocked: [-35, "상대가 차단함 (명확한 거부)"] }, a.contact);
   addMap(f, { none: [4, "새로운 사람 없는 듯"], unknown: [0, ""], yes: [-18, "상대에게 새로운 사람 (현실적 난도↑)"] }, a.newperson);
-  addMap(f, { lt3m: [-4, "짧았던 관계"], "3to12m": [2, "어느 정도 쌓인 관계"], "1to3y": [5, "깊이 있는 관계"], gt3y: [4, "오래된 관계"] }, a.period);
+  // S1 외도: 외도가 이별 사유면 '오래 사귄 관계'를 가산점으로 보지 않는다 (관계 기간 보너스 제거).
+  if (a.affair !== "yes") {
+    addMap(f, { lt3m: [-4, "짧았던 관계"], "3to12m": [2, "어느 정도 쌓인 관계"], "1to3y": [5, "깊이 있는 관계"], gt3y: [4, "오래된 관계"] }, a.period);
+  }
   addMap(f, { expressive: [5, "상대가 안정형"], inconsistent: [-2, "상대 표현 기복"], reserved: [-10, "상대가 회피형 (공간 더 필요)"] }, a.partner);
   addMap(f, { secure: [5, "나의 안정적 태도 (건강한 재접촉 가능)"], anxious: [-6, "나의 불안 성향 (매달릴 위험)"], avoidant: [-2, "나의 회피 성향"] }, a.selfAttach);
   addMap(f, { low: [6, "차분한 마음 상태 (좋은 신호)"], mid: [0, ""], high: [-10, "조급함 (역효과 위험)"] }, a.urgency);

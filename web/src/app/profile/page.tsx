@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/SignOutButton";
+import { DeleteAllDataButton } from "@/components/DeleteAllDataButton";
 import { ProfileEditor } from "@/components/ProfileEditor";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,9 @@ export default async function ProfilePage() {
       <div className="mt-6">
         <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">계정 관리</p>
         <SignOutButton />
+        <div className="mt-5 border-t border-line pt-4">
+          <DeleteAllDataButton />
+        </div>
       </div>
     </div>
   );

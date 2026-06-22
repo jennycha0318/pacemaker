@@ -48,6 +48,14 @@ const FREE_TEXT_Q: Question = {
   desc: "무슨 일이 있었는지 적어두면 기록으로 저장돼요. (지금은 진단 점수에 반영되지 않고, 추후 AI 개인화에 활용될 예정이에요 · 선택)",
   placeholder: "예) 일이 바빠서 소홀했고, 마지막에 크게 싸우고 헤어졌어요…",
 };
+const ABUSE_Q: Question = {
+  id: "abuse",
+  title: "이전에 상대가 당신을 통제하거나, 위협·폭력을 한 적이 있나요?",
+  options: [
+    { v: "no", label: "아니요, 없었어요" },
+    { v: "yes", label: "네, 있었어요", note: "안전이 우선이에요" },
+  ],
+};
 const COMMON = [PARTNER_Q, SELF_ATTACH_Q, SELF_URGENCY_Q, FREE_TEXT_Q];
 
 export const STAGE_LABEL: Record<Stage, string> = {
@@ -94,6 +102,7 @@ export const SURVEYS: Record<Stage, Question[]> = {
       { v: "1to3y", label: "1~3년" },
       { v: "gt3y", label: "3년 이상" },
     ] },
+    ABUSE_Q,
     { id: "mood", title: "최근 관계 분위기는?", options: [
       { v: "better", label: "점점 좋아지고 있어요" },
       { v: "same", label: "비슷해요" },
@@ -123,6 +132,7 @@ export const SURVEYS: Record<Stage, Question[]> = {
       { v: "1to3y", label: "1~3년" },
       { v: "gt3y", label: "3년 이상" },
     ] },
+    ABUSE_Q,
     { id: "since", title: "헤어진 지 얼마나 됐나요?", options: [
       { v: "lt1w", label: "1주일 미만" },
       { v: "1to2w", label: "1~2주" },
