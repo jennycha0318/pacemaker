@@ -54,8 +54,8 @@ export default async function LandingPage() {
         </p>
       </div>
 
-      {/* 특징 카드 */}
-      <div className="card pm-fade-up mt-4">
+      {/* 특징 — 박스 없이 배경에 자연스럽게 */}
+      <div className="pm-fade-up mt-7">
         <p className="mb-3.5 text-[12px] font-bold uppercase tracking-wide text-primaryDark">Pacemaker는 이렇게 도와요</p>
         <ul className="flex flex-col gap-3 text-[14px]">
           {[
