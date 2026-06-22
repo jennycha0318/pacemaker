@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { SURVEYS, type Stage } from "@/lib/diagnose/survey";
 import { diagnose, type Answers, type Diagnosis } from "@/lib/diagnose/engine";
 import { Report } from "@/components/Report";
-import { LegalEthicsNotice } from "@/components/SupportNotices";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
 import { getProfile, saveProfile } from "@/lib/profile";
 
@@ -16,7 +15,7 @@ const STAGES: { v: Stage; name: string; note: string }[] = [
   { v: "breakup", name: "이별 후", note: "재회하고 싶어요" },
 ];
 
-type Phase = "me" | "stage" | "affair" | "partner" | "survey" | "result";
+type Phase = "me" | "stage" | "partner" | "survey" | "result";
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "guest";
 
 // 게스트 진단 결과 임시 보존 키(가입/로그인 직후 /diagnose 재진입 시 복원·저장)
@@ -78,8 +77,6 @@ export default function DiagnosePage() {
   const [myBirthYear, setMyBirthYear] = useState("");
   const [myMbti, setMyMbti] = useState("");
   const [stage, setStage] = useState<Stage>("crush");
-  const [affair, setAffair] = useState<"yes" | "no" | "">(""); // S1 외도 가치 일시정지 플래그(engine이 a.affair 읽음)
-  const [affairStep, setAffairStep] = useState<0 | 1>(0); // affair 게이트: 0=질문, 1=가치 일시정지 안내
   const [partnerBirthYear, setPartnerBirthYear] = useState("");
   const [partnerMbti, setPartnerMbti] = useState("");
   const [qIndex, setQIndex] = useState(0);
@@ -184,7 +181,6 @@ export default function DiagnosePage() {
   function finish(ans: Answers) {
     const s = stage;
     const merged: Answers = { ...ans, myMbti, partnerMbti, myBirthYear, partnerBirthYear };
-    if (affair) merged.affair = affair; // S1: engine이 a.affair 읽음
     const d = diagnose(s, merged);
     d.minor = minor; // 생년 기반 청소년 모드
 
@@ -262,10 +258,7 @@ export default function DiagnosePage() {
   function pickStage(s: Stage) {
     setStage(s); setAnswers({}); setQIndex(0); setFree("");
     setPartnerBirthYear(""); setPartnerMbti("");
-    setAffair(""); setAffairStep(0);
-    // S1: 썸/이별은 외도 가치 일시정지 게이트를 먼저, 연애 중은 기존대로 상대 단계로
-    if (s === "crush" || s === "breakup") setPhase("affair");
-    else setPhase("partner");
+    setPhase("partner");
   }
 
   function reset() {
@@ -284,8 +277,7 @@ export default function DiagnosePage() {
       <div className="min-h-[calc(100svh-9rem)]">
         <Link href="/" className="text-sm text-muted">← 처음으로</Link>
         <StepIndicator phase="me" meDone={hasProfileBirth} />
-        <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
-        <p className="mb-6 text-sm text-muted">나이에 맞춰 더 편하게 설명하고, 결과를 개인화하는 데 써요.</p>
+        <h2 className="mb-6 mt-2 text-[26px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
 
         <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
         <div className="mb-4"><YearSelect value={myBirthYear} onChange={setMyBirthYear} ariaLabel="내 출생연도" /></div>
@@ -307,8 +299,7 @@ export default function DiagnosePage() {
           ? <Link href="/" className="text-sm text-muted">← 처음으로</Link>
           : <button onClick={() => setPhase("me")} className="text-sm text-muted">← 내 정보</button>}
         <StepIndicator phase="stage" meDone={hasProfileBirth} />
-        <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
-        <p className="mb-6 text-sm text-muted">상황에 맞춰 질문이 달라집니다. 로그인 없이 바로 진단받을 수 있어요.</p>
+        <h2 className="mb-6 mt-2 text-[26px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
         <div className="flex flex-col gap-3.5">
           {STAGES.map((s) => (
             <button key={s.v} onClick={() => pickStage(s.v)}
@@ -321,56 +312,8 @@ export default function DiagnosePage() {
             </button>
           ))}
         </div>
-        {minor ? (
+        {minor && (
           <p className="mt-6 text-center text-[12.5px] text-muted">편하게 골라줘요. 정답은 없어요.</p>
-        ) : (
-          <div className="mt-6 rounded-xl border border-line bg-surface/60 p-3.5">
-            <LegalEthicsNotice />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ── S1 외도 가치기반 일시정지(가치 일시정지, 계속 가능) ──
-  if (phase === "affair") {
-    return (
-      <div className="min-h-[calc(100svh-9rem)]">
-        <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
-        <StepIndicator phase="stage" meDone={hasProfileBirth} />
-        {affairStep === 0 ? (
-          <>
-            <h2 className="mb-1.5 mt-2 text-[26px] font-bold leading-snug tracking-tight">한 가지만 확인할게요</h2>
-            <p className="mb-6 text-sm text-muted">상황에 따라 조심스럽게 안내드릴 게 있어서요.</p>
-            <div className="card mb-6">
-              <p className="text-[15.5px] font-bold leading-relaxed text-ink">
-                지금 배우자나 사귀는 사람이 있는 상태에서, 그 사람이 ‘아닌’ 다른 상대에 대한 고민인가요?
-              </p>
-            </div>
-            <div className="flex flex-col gap-2.5">
-              <button className="btn btn-primary"
-                onClick={() => { setAffair("no"); setPhase("partner"); }}>아니에요</button>
-              <button className="btn btn-ghost"
-                onClick={() => setAffairStep(1)}>네, 그래요</button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">잠깐만요</h2>
-            <div className="card mb-4">
-              <p className="text-[14.5px] leading-relaxed text-ink">
-                지금 다른 관계가 있는 상태에서의 새로운 관계·재회는 배우자·연인, 그리고 관련된 사람들에게 깊은 상처가 될 수 있어요. 법적·윤리적 문제가 될 수도 있어요.
-              </p>
-            </div>
-            <div className="mb-6 rounded-xl border border-line bg-surface/60 p-3.5">
-              <LegalEthicsNotice />
-            </div>
-            <div className="flex flex-col gap-2.5">
-              <Link href="/" className="btn btn-primary block text-center">그만두기</Link>
-              <button className="btn btn-ghost"
-                onClick={() => { setAffair("yes"); setPhase("partner"); }}>그래도 진행</button>
-            </div>
-          </>
         )}
       </div>
     );
@@ -382,25 +325,13 @@ export default function DiagnosePage() {
       <div className="min-h-[calc(100svh-9rem)]">
         <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
         <StepIndicator phase="partner" meDone={hasProfileBirth} />
-        <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
-        <p className="mb-6 text-sm text-muted">알면 궁합·소통 팁을 더해드려요. <b className="text-ink">몰라도 괜찮아요</b> — 건너뛰어도 진단은 똑같이 정확해요.</p>
+        <h2 className="mb-6 mt-2 text-[26px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
 
         <label className="mb-1.5 block text-[13px] font-bold">상대 출생연도 <span className="font-normal text-muted">(선택)</span></label>
         <div className="mb-4"><YearSelect value={partnerBirthYear} onChange={setPartnerBirthYear} ariaLabel="상대 출생연도" /></div>
 
         <label className="mb-1.5 block text-[13px] font-bold">상대 MBTI <span className="font-normal text-muted">(선택)</span></label>
-        <div className="mb-1.5"><MbtiSelect value={partnerMbti} onChange={setPartnerMbti} ariaLabel="상대 MBTI" /></div>
-        <p className="mb-3 text-[12.5px] text-muted">상대 정보는 제3자 정보라 꼭 필요한 만큼만 받아요. MBTI·나이차는 참고 요소예요.</p>
-
-        <details className="mb-5 rounded-xl border border-white/60 bg-white/45 px-3.5 py-2.5 backdrop-blur">
-          <summary className="cursor-pointer list-none text-[12.5px] font-bold text-primaryDark marker:content-none">입력하면 뭐가 달라지나요?</summary>
-          <ul className="mt-2 space-y-1 text-[12px] leading-relaxed text-muted">
-            <li>· 상대 MBTI → 소통·메시지 톤 팁</li>
-            <li>· 나·상대 MBTI → 궁합 한 줄</li>
-            <li>· 출생연도 → 나이차 참고</li>
-          </ul>
-          <p className="mt-2 text-[11.5px] text-muted/80">모두 점수엔 미반영, 참고용이에요.</p>
-        </details>
+        <div className="mb-5"><MbtiSelect value={partnerMbti} onChange={setPartnerMbti} ariaLabel="상대 MBTI" /></div>
 
         <button className="btn btn-primary" onClick={() => setPhase("survey")}>다음</button>
         <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
