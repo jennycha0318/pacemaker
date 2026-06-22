@@ -259,7 +259,7 @@ export default function DiagnosePage() {
       <div className="my-3 h-1.5 overflow-hidden rounded-full bg-line"
         role="progressbar" aria-label="설문 진행률" aria-valuemin={0} aria-valuemax={total} aria-valuenow={qIndex + 1}>
         <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500 ease-out"
-          style={{ width: `${(qIndex / total) * 100}%` }} />
+          style={{ width: `${((qIndex + 1) / total) * 100}%` }} />
       </div>
       <p className="mb-2.5 text-[13px] font-bold text-primaryDark">질문 {qIndex + 1} / {total}</p>
       <h2 className="mb-6 text-[25px] font-bold leading-snug tracking-tight">{q.title}</h2>

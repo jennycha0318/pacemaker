@@ -3,8 +3,17 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Report } from "@/components/Report";
 import type { Diagnosis } from "@/lib/diagnose/engine";
+import { STAGE_LABEL, type Stage } from "@/lib/diagnose/survey";
 
 export const dynamic = "force-dynamic";
+
+function fmt(ts: string) {
+  return new Date(ts).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
 
 export default async function HistoryDetailPage({
   params,
@@ -15,7 +24,7 @@ export default async function HistoryDetailPage({
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("diagnoses")
-    .select("result")
+    .select("stage, result, created_at")
     .eq("id", id)
     .single();
 
@@ -26,10 +35,11 @@ export default async function HistoryDetailPage({
 
   return (
     <div>
-      <Link href="/history" className="text-sm text-muted">← 히스토리</Link>
-      <div className="mt-3">
-        <Report d={d} />
-      </div>
+      <Link href="/history" className="inline-flex items-center gap-1 rounded-full bg-white/55 px-3 py-1.5 text-sm font-bold text-primaryDark backdrop-blur">← 히스토리</Link>
+      <p className="mb-3 mt-3 text-[13px] text-muted">
+        {STAGE_LABEL[data.stage as Stage] ?? "진단"} · {fmt(data.created_at as string)}
+      </p>
+      <Report d={d} />
     </div>
   );
 }

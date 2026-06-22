@@ -1,5 +1,5 @@
 // Pacemaker 로고 — 하트 + X/체크 말풍선(연애 의사결정). 파스텔 글래스 팔레트로 재제작.
-export function Logo({ size = 40, className = "" }: { size?: number; className?: string }) {
+export function Logo({ size = 40, className = "", decorative = false }: { size?: number; className?: string; decorative?: boolean }) {
   return (
     <svg
       width={size}
@@ -7,8 +7,9 @@ export function Logo({ size = 40, className = "" }: { size?: number; className?:
       viewBox="0 0 512 512"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label="Pacemaker 로고"
+      role={decorative ? undefined : "img"}
+      aria-label={decorative ? undefined : "Pacemaker 로고"}
+      aria-hidden={decorative ? true : undefined}
       className={className}
     >
       <defs>
@@ -47,7 +48,7 @@ export function Logo({ size = 40, className = "" }: { size?: number; className?:
 export function BrandLockup({ size = 36, className = "" }: { size?: number; className?: string }) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Logo size={size} />
+      <Logo size={size} decorative />
       <span className="font-display text-[22px] font-bold tracking-tight text-ink">Pacemaker</span>
     </div>
   );

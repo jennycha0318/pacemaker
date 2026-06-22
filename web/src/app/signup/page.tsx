@@ -70,12 +70,12 @@ export default function SignupPage() {
         <span>또는 이메일로</span>
       </div>
 
-      <label className="mb-1.5 block text-[13px] font-bold">이름(닉네임)</label>
-      <input className="field-input mb-3.5" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 지은" />
-      <label className="mb-1.5 block text-[13px] font-bold">이메일</label>
-      <input className="field-input mb-3.5" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-      <label className="mb-1.5 block text-[13px] font-bold">비밀번호</label>
-      <input className="field-input mb-3.5" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6자 이상" />
+      <label htmlFor="su-name" className="mb-1.5 block text-[13px] font-bold">이름(닉네임)</label>
+      <input id="su-name" autoComplete="name" className="field-input mb-3.5" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 지은" />
+      <label htmlFor="su-email" className="mb-1.5 block text-[13px] font-bold">이메일</label>
+      <input id="su-email" autoComplete="email" className="field-input mb-3.5" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+      <label htmlFor="su-pw" className="mb-1.5 block text-[13px] font-bold">비밀번호</label>
+      <input id="su-pw" autoComplete="new-password" className="field-input mb-3.5" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6자 이상" />
 
       <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
       <div className="mb-3.5"><YearSelect value={birthYear} onChange={setBirthYear} ariaLabel="출생연도" /></div>

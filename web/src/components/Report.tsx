@@ -61,7 +61,8 @@ export function Report({ d }: { d: Diagnosis }) {
 
       {/* 판단 근거 */}
       <div className="card">
-        <p className="mb-3.5 text-xs font-bold uppercase tracking-wide text-primaryDark">이렇게 판단했어요</p>
+        <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-primaryDark">이렇게 판단했어요</p>
+        <p className="mb-3 text-[12px] leading-relaxed text-muted">점수 계산에 반영된 요인이에요. 당신이 부족하다는 뜻이 아니에요.</p>
         <ul className="flex flex-col gap-2">
           {factors.map((f, i) => {
             const pos = f.delta > 0;
@@ -119,7 +120,7 @@ export function Report({ d }: { d: Diagnosis }) {
         <div className="card">
           <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primaryDark">
             성향·궁합
-            <span className="rounded-full bg-primarySoft px-2 py-0.5 text-[10px] font-bold normal-case text-primaryDark">참고</span>
+            <span className="rounded-full bg-primarySoft px-2 py-0.5 text-[11px] font-bold normal-case text-primaryDark">점수 미반영</span>
           </p>
           {d.compat.mbtiNote && <p className="mb-2 text-sm font-bold text-ink">{d.compat.mbtiNote}</p>}
           {d.compat.ageGapNote && <p className="mb-2 text-[13px] text-muted">{d.compat.ageGapNote}</p>}

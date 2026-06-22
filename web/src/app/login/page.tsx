@@ -47,11 +47,11 @@ export default function LoginPage() {
         <span>또는 이메일로</span>
       </div>
 
-      <label className="mb-1.5 block text-[13px] font-bold">이메일</label>
-      <input className="field-input mb-3.5" type="email" value={email}
+      <label htmlFor="login-email" className="mb-1.5 block text-[13px] font-bold">이메일</label>
+      <input id="login-email" autoComplete="email" className="field-input mb-3.5" type="email" value={email}
         onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-      <label className="mb-1.5 block text-[13px] font-bold">비밀번호</label>
-      <input className="field-input" type="password" value={pw}
+      <label htmlFor="login-pw" className="mb-1.5 block text-[13px] font-bold">비밀번호</label>
+      <input id="login-pw" autoComplete="current-password" className="field-input" type="password" value={pw}
         onChange={(e) => setPw(e.target.value)} placeholder="비밀번호"
         onKeyDown={(e) => e.key === "Enter" && login()} />
       <p className="min-h-[18px] py-1.5 text-[13px] text-bad">{err}</p>

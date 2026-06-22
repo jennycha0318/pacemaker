@@ -62,8 +62,8 @@ h1, h2, h3, h4, .font-title {
   /* 보조: 글래스 */
   .btn-ghost {
     @apply font-bold text-ink;
-    background: rgba(255, 255, 255, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(10px);
   }
   .btn:disabled {
