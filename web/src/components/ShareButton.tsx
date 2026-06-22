@@ -2,21 +2,22 @@
 
 import { useState } from "react";
 import type { Diagnosis } from "@/lib/diagnose/engine";
-import { scoreBadge } from "@/lib/diagnose/colors";
 
 export function ShareButton({ d }: { d: Diagnosis }) {
   const [copied, setCopied] = useState(false);
 
-  const summary = `[Pacemaker] ${d.scoreTitle} ${d.score}/100 — ${scoreBadge(d.score)}\n언제: ${d.plan.when}`;
-
   async function onShare() {
     try {
+      if (typeof window === "undefined") return;
+      const payload = { t: d.scoreTitle, s: d.score, w: d.plan.when };
+      const url = `${window.location.origin}/share?d=${encodeURIComponent(JSON.stringify(payload))}`;
+
       if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({ title: "Pacemaker", text: summary });
+        await navigator.share({ title: "Pacemaker", text: "Pacemaker를 통해 공유한 내용 보러가기", url });
         return;
       }
       if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(summary);
+        await navigator.clipboard.writeText(url);
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
       }
@@ -33,7 +34,7 @@ export function ShareButton({ d }: { d: Diagnosis }) {
             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 6 9 17l-5-5" />
           </svg>
-          복사됐어요
+          링크 복사됐어요
         </>
       ) : (
         <>

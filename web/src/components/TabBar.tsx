@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // 인증/랜딩 화면에서는 탭 숨김. 그 외 앱 화면(진단·히스토리·프로필 등)에선 항상 표시.
-const HIDE_ON = ["/", "/login", "/signup", "/reset-password", "/update-password"];
+const HIDE_ON = ["/", "/login", "/signup", "/reset-password", "/update-password", "/share"];
 
 const TABS = [
   {

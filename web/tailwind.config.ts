@@ -26,7 +26,7 @@ export default {
         bad: "#b96b8f",
       },
       fontFamily: {
-        sans: ['"Pretendard Variable"', "Pretendard", "system-ui", "sans-serif"],
+        sans: ['"Noto Sans KR"', '"Pretendard Variable"', "Pretendard", "system-ui", "sans-serif"],
         display: ['"Pretendard Variable"', "Pretendard", "system-ui", "sans-serif"],
       },
       maxWidth: { app: "480px" },

@@ -2,6 +2,7 @@
 // 점수·플랜·근거는 결정적 규칙으로 계산 → 신뢰. (AI 개인화는 추후 결합)
 import type { Stage } from "./survey";
 import { computePersonality, type Compat } from "./personality";
+import { analyzeFreeText } from "./freetext";
 
 export type Answers = Record<string, string>;
 export interface Factor { label: string; delta: number; }
@@ -92,6 +93,9 @@ function diagnoseCrush(a: Answers): Diagnosis {
   const clingy = a.initiation === "me_more" && (a.urgency === "high" || a.selfAttach === "anxious");
   if (clingy) f.push({ label: "나만 달려가는 패턴 감지", delta: -6 });
 
+  const ft = analyzeFreeText(a.freeText);
+  f.push(...ft.factors);
+
   const score = clamp(50 + sum(f));
   const res: Diagnosis = { scoreTitle: "고백 적정도", score, factors: f } as Diagnosis;
 
@@ -127,7 +131,7 @@ function diagnoseCrush(a: Answers): Diagnosis {
     res.hold = "지금은 고백 문구를 보내기보다, 가벼운 일상 공유로 ‘편안한 접점’을 유지하는 단계예요. 무리한 직진은 권하지 않습니다.";
   }
   if (clingy) res.risks.unshift("나만 주도하고 있어요. 연락 빈도를 의식적으로 줄여 상대의 자발성을 확인하세요.");
-  res.needsSupport = clingy && score < 45;
+  res.needsSupport = (clingy && score < 45) || ft.needsSupport;
   return res;
 }
 
@@ -143,6 +147,10 @@ function diagnoseDating(a: Answers): Diagnosis {
   addMap(f, { low: [4, "차분한 마음 상태"], mid: [0, ""], high: [-6, "조급·불안한 마음 상태"] }, a.urgency);
 
   const anxiousClingy = a.selfAttach === "anxious" || a.urgency === "high";
+
+  const ft = analyzeFreeText(a.freeText);
+  f.push(...ft.factors);
+
   const score = clamp(58 + sum(f));
   const res: Diagnosis = { scoreTitle: "관계 안정도", score, factors: f } as Diagnosis;
 
@@ -178,7 +186,7 @@ function diagnoseDating(a: Answers): Diagnosis {
     res.msg = "요즘 너와 나 사이가 예전 같지 않게 느껴져.\n탓하려는 게 아니라, 우리가 어떤 상태인지 솔직하게 한번 얘기하고 싶어.";
   }
   if (anxiousClingy) res.risks.unshift("불안이 큰 상태예요. 확인·추궁은 줄이고, 내 감정을 ‘나 전달법’으로 차분히 표현하는 데 집중하세요.");
-  res.needsSupport = anxiousClingy && score < 45;
+  res.needsSupport = (anxiousClingy && score < 45) || ft.needsSupport;
   return res;
 }
 
@@ -200,6 +208,9 @@ function diagnoseBreakup(a: Answers): Diagnosis {
   const tooSoon = a.since === "lt1w" || a.since === "1to2w";
   const clingy = (a.urgency === "high" || a.selfAttach === "anxious") && (a.contact === "frequent" || a.contact === "fighting");
   if (clingy) f.push({ label: "불안 + 과한 연락 패턴 (매달림 위험)", delta: -8 });
+
+  const ft = analyzeFreeText(a.freeText);
+  f.push(...ft.factors);
 
   let score = clamp(50 + sum(f));
   if (a.contact === "blocked") score = Math.min(score, 20);
@@ -254,7 +265,7 @@ function diagnoseBreakup(a: Answers): Diagnosis {
   }
   if (otherPerson) res.risks.unshift("상대에게 새로운 사람이 있다면, 끼어드는 연락은 역효과예요. 거리를 두고 상황을 지켜보세요.");
   if (clingy) res.risks.unshift("불안에 떠밀린 잦은 연락이 감지돼요. 지금은 연락을 멈추고 나를 회복하는 것이 최우선입니다.");
-  res.needsSupport = score < 45 || clingy;
+  res.needsSupport = score < 45 || clingy || ft.needsSupport;
   return res;
 }
 
