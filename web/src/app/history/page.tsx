@@ -32,7 +32,7 @@ export default async function HistoryPage() {
   if (error) {
     return (
       <div>
-        <h2 className="mb-1.5 text-[23px] font-bold tracking-tight">진단 히스토리</h2>
+        <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">진단 히스토리</h2>
         <div className="card text-center text-sm text-muted">
           기록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
         </div>
@@ -43,7 +43,7 @@ export default async function HistoryPage() {
 
   return (
     <div>
-      <h2 className="mb-1.5 text-[23px] font-bold tracking-tight">진단 히스토리</h2>
+      <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">진단 히스토리</h2>
       <p className="mb-5 text-sm text-muted">지난 진단 결과를 다시 볼 수 있어요.</p>
 
       {rows.length === 0 ? (

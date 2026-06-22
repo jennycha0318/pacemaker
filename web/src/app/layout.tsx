@@ -17,7 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <div className="mx-auto min-h-screen max-w-app px-5 pb-[max(7rem,calc(6rem+env(safe-area-inset-bottom)))] pt-6">{children}</div>
+        <div className="mx-auto flex min-h-screen max-w-app flex-col px-5 pb-[max(7rem,calc(6rem+env(safe-area-inset-bottom)))] pt-6">
+          <div className="my-auto w-full">{children}</div>
+        </div>
         <TabBar />
       </body>
     </html>

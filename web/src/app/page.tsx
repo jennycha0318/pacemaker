@@ -20,12 +20,12 @@ export default async function LandingPage() {
     <div className="pt-6">
       <BrandLockup className="mb-7" />
       <p className="mb-3.5 text-sm font-bold text-primaryDark">고백해도 될까? 지금 연락해도 될까?</p>
-      <h1 className="mb-4 text-[28px] font-bold leading-[1.35] tracking-tight">
+      <h1 className="mb-4 text-[34px] font-bold leading-[1.35] tracking-tight">
         연애의 결정적 순간,
         <br />
         <span className="text-primary">타이밍</span>을 분석해 드립니다
       </h1>
-      <p className="mb-7 text-[15px] text-muted">
+      <p className="mb-7 text-base text-muted">
         내 상황과 상대 성향 데이터를 분석해
         <br />
         성공 확률이 높아지는 <b className="text-ink">타이밍과 행동</b>을 제안

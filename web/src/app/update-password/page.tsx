@@ -51,7 +51,7 @@ export default function UpdatePasswordPage() {
   if (ready === false) {
     return (
       <div className="pt-4">
-        <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">링크가 만료됐어요</h2>
+        <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">링크가 만료됐어요</h2>
         <p className="mb-6 text-sm text-muted">비밀번호 재설정 링크가 유효하지 않거나 만료됐습니다. 다시 시도해 주세요.</p>
         <Link href="/reset-password" className="btn btn-primary block text-center">재설정 링크 다시 받기</Link>
         <Link href="/login" className="btn btn-ghost mt-3 block text-center">로그인으로 돌아가기</Link>
@@ -61,7 +61,7 @@ export default function UpdatePasswordPage() {
 
   return (
     <div className="pt-4">
-      <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">새 비밀번호 설정</h2>
+      <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">새 비밀번호 설정</h2>
       <p className="mb-6 text-sm text-muted">사용할 새 비밀번호를 입력해 주세요.</p>
       <label className="mb-1.5 block text-[13px] font-bold">새 비밀번호</label>
       <input className="field-input mb-3.5" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6자 이상" />

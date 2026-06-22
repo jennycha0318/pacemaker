@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="pt-4">
-      <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">비밀번호 찾기</h2>
+      <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">비밀번호 찾기</h2>
       <p className="mb-6 text-sm text-muted">가입한 이메일로 재설정 링크를 보내드려요.</p>
       <label className="mb-1.5 block text-[13px] font-bold">이메일</label>
       <input className="field-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />

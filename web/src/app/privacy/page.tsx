@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   return (
     <div className="pt-4 pb-8">
       <Link href="/" className="text-sm text-muted">← 처음으로</Link>
-      <h1 className="mb-1.5 mt-2 text-[24px] font-bold tracking-tight">개인정보처리방침</h1>
+      <h1 className="mb-1.5 mt-2 text-[28px] font-bold tracking-tight">개인정보처리방침</h1>
       <p className="mb-6 text-[13px] text-muted">
         초안입니다. 정식 서비스 전 법률 검토가 필요합니다.
       </p>

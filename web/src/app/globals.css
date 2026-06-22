@@ -20,6 +20,7 @@
 
 :root {
   color-scheme: light;
+  font-size: 18px;
 }
 
 body {
@@ -50,7 +51,7 @@ h1, h2, h3, h4, .font-title {
 
 @layer components {
   .btn {
-    @apply w-full rounded-full px-5 py-3.5 text-[15px] font-bold transition active:scale-[0.98];
+    @apply w-full rounded-full px-5 py-4 text-base font-bold transition active:scale-[0.98];
   }
   /* 메인 CTA: 위스테리아→아쿠아 그라데이션 필 */
   .btn-primary {
@@ -79,7 +80,7 @@ h1, h2, h3, h4, .font-title {
     @apply p-5;
   }
   .field-input {
-    @apply w-full rounded-2xl px-3.5 py-3 text-[15px] text-ink outline-none;
+    @apply w-full rounded-2xl px-3.5 py-3.5 text-base text-ink outline-none;
     background: rgba(255, 255, 255, 0.6);
     border: 1.5px solid rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(8px);

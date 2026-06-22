@@ -146,7 +146,7 @@ export default function DiagnosePage() {
     return (
       <div>
         <Link href="/" className="text-sm text-muted">← 처음으로</Link>
-        <h2 className="mb-1.5 mt-2 text-[23px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
+        <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
         <p className="mb-6 text-sm text-muted">나이에 맞춰 더 편하게 설명하고, 결과를 개인화하는 데 써요.</p>
 
         <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
@@ -168,7 +168,7 @@ export default function DiagnosePage() {
         {hasProfileBirth
           ? <Link href="/" className="text-sm text-muted">← 처음으로</Link>
           : <button onClick={() => setPhase("me")} className="text-sm text-muted">← 내 정보</button>}
-        <h2 className="mb-1.5 mt-2 text-[23px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
+        <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
         <p className="mb-6 text-sm text-muted">상황에 맞춰 질문이 달라집니다. 로그인 없이 바로 진단받을 수 있어요.</p>
         <div className="flex flex-col gap-3.5">
           {STAGES.map((s) => (
@@ -198,7 +198,7 @@ export default function DiagnosePage() {
     return (
       <div>
         <button onClick={() => setPhase("stage")} className="text-sm text-muted">← 상황</button>
-        <h2 className="mb-1.5 mt-2 text-[23px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
+        <h2 className="mb-1.5 mt-2 text-[26px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
         <p className="mb-6 text-sm text-muted">알면 궁합·소통 팁을 더해드려요. <b className="text-ink">몰라도 괜찮아요</b> — 건너뛰어도 진단은 똑같이 정확해요.</p>
 
         <label className="mb-1.5 block text-[13px] font-bold">상대 출생연도 <span className="font-normal text-muted">(선택)</span></label>
@@ -262,7 +262,7 @@ export default function DiagnosePage() {
           style={{ width: `${(qIndex / total) * 100}%` }} />
       </div>
       <p className="mb-2.5 text-[13px] font-bold text-primaryDark">질문 {qIndex + 1} / {total}</p>
-      <h2 className="mb-6 text-[22px] font-bold leading-snug tracking-tight">{q.title}</h2>
+      <h2 className="mb-6 text-[25px] font-bold leading-snug tracking-tight">{q.title}</h2>
 
       {q.type === "text" ? (
         <div>
@@ -276,7 +276,7 @@ export default function DiagnosePage() {
         <div className="flex flex-col gap-2.5">
           {q.options!.map((opt) => (
             <button key={opt.v} onClick={() => selectOption(q.id, opt.v)}
-              className={`rounded-[14px] border p-4 text-left text-[15px] backdrop-blur transition active:scale-[0.99] ${
+              className={`rounded-[14px] border p-4 text-left text-base backdrop-blur transition active:scale-[0.99] ${
                 answers[q.id] === opt.v ? "border-primary bg-primarySoft font-bold" : "border-white/60 bg-white/60 hover:border-primary"
               }`}>
               {opt.label}
