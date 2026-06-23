@@ -67,7 +67,13 @@ function groupOf(ts: string, now: Date): GroupKey {
   return "그 이전";
 }
 
-export function HistoryList({ rows }: { rows: Row[] }) {
+export function HistoryList({
+  rows,
+  chatByDiag,
+}: {
+  rows: Row[];
+  chatByDiag?: Record<string, { count: number; lastQ: string }>;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
 
   const filtered = useMemo(
@@ -125,36 +131,56 @@ export function HistoryList({ rows }: { rows: Row[] }) {
               <ul className="flex flex-col gap-2.5">
                 {g.items.map((r) => {
                   const color = scoreColor(r.score);
+                  const chat = chatByDiag?.[r.id];
                   return (
-                    <li key={r.id} className="relative">
-                      <Link
-                        href={`/history/${r.id}`}
-                        className="flex items-center gap-3.5 rounded-[18px] border border-white/60 bg-white/55 py-3.5 pl-4 pr-12 backdrop-blur transition active:scale-[0.98] hover:border-primary"
-                      >
-                        <span
-                          className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-xl text-lg font-bold"
-                          style={{ color, background: `${color}1a` }}
+                    <li key={r.id} className="flex flex-col gap-1.5">
+                      <div className="relative">
+                        <Link
+                          href={`/history/${r.id}`}
+                          className="flex items-center gap-3.5 rounded-[18px] border border-white/60 bg-white/55 py-3.5 pl-4 pr-12 backdrop-blur transition active:scale-[0.98] hover:border-primary"
                         >
-                          {r.score}
-                        </span>
-                        <span className="flex min-w-0 flex-1 flex-col">
-                          <b className="text-[14.5px]">
-                            {STAGE_LABEL[r.stage] ?? "진단"} · {r.result?.scoreTitle ?? "결과"}
-                          </b>
-                          <span className="text-[12.5px] text-primaryDark">
-                            {r.result?.plan?.when ?? ""}
+                          <span
+                            className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-xl text-lg font-bold"
+                            style={{ color, background: `${color}1a` }}
+                          >
+                            {r.score}
                           </span>
-                          <span className="mt-0.5 flex items-center gap-1 text-[12.5px] text-ink/70">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9h18M8 2.5v4M16 2.5v4" />
+                          <span className="flex min-w-0 flex-1 flex-col">
+                            <b className="text-[14.5px]">
+                              {STAGE_LABEL[r.stage] ?? "진단"} · {r.result?.scoreTitle ?? "결과"}
+                            </b>
+                            <span className="text-[12.5px] text-primaryDark">
+                              {r.result?.plan?.when ?? ""}
+                            </span>
+                            <span className="mt-0.5 flex items-center gap-1 text-[12.5px] text-ink/70">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9h18M8 2.5v4M16 2.5v4" />
+                              </svg>
+                              {fmt(r.created_at)}
+                            </span>
+                          </span>
+                        </Link>
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                          <DeleteDiagnosisButton id={r.id} />
+                        </span>
+                      </div>
+                      {chat && (
+                        <Link
+                          href={`/history/${r.id}/chat`}
+                          className="ml-3 flex items-center gap-2.5 rounded-[14px] border border-accent/30 bg-accent/5 py-2.5 pl-3 pr-3 backdrop-blur transition active:scale-[0.98] hover:border-accent"
+                        >
+                          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent/15 text-accent">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                             </svg>
-                            {fmt(r.created_at)}
                           </span>
-                        </span>
-                      </Link>
-                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                        <DeleteDiagnosisButton id={r.id} />
-                      </span>
+                          <span className="flex min-w-0 flex-1 flex-col">
+                            <span className="truncate text-[12.5px] text-ink/75">Q. {chat.lastQ}</span>
+                            <span className="text-[11.5px] font-bold text-accent">상담 {chat.count}개 · 전체 보기</span>
+                          </span>
+                          <span className="shrink-0 text-muted" aria-hidden="true">›</span>
+                        </Link>
+                      )}
                     </li>
                   );
                 })}
