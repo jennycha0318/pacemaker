@@ -42,8 +42,8 @@ export default async function LandingPage() {
         </h1>
       </div>
 
-      {/* 특징 — 흰 카드(금색 테두리), 제목 가운데 · 체크는 일렬 정렬 */}
-      <div className="card pm-fade-up mt-6" style={{ borderColor: "#cba84f" }}>
+      {/* 특징 — 흰 카드(파스텔 테두리), 제목 가운데 · 체크는 일렬 정렬 */}
+      <div className="card pm-fade-up mt-6" style={{ borderColor: "#c0b9dd" }}>
         <p className="mb-3.5 text-center text-[12px] font-bold uppercase tracking-wide text-primaryDark">큐핏은 이렇게 도와요</p>
         <ul className="mx-auto flex w-fit flex-col gap-3 text-[14px]">
           {[
