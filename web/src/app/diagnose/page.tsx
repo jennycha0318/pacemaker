@@ -11,6 +11,7 @@ import { getProfile, saveProfile } from "@/lib/profile";
 
 const STAGES: { v: Stage; name: string; note: string }[] = [
   { v: "crush", name: "썸 타는 중", note: "고백 타이밍이 고민돼요" },
+  { v: "unrequited", name: "짝사랑 중", note: "다가가도 될지 고민돼요" },
   { v: "dating", name: "연애 중", note: "관계가 불안해요" },
   { v: "breakup", name: "이별 후", note: "재회하고 싶어요" },
 ];

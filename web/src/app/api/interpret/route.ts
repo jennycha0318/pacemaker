@@ -27,7 +27,7 @@ const OUTPUT_SCHEMA = {
 } as const;
 
 function isStage(s: unknown): s is Stage {
-  return s === "crush" || s === "dating" || s === "breakup";
+  return s === "crush" || s === "unrequited" || s === "dating" || s === "breakup";
 }
 
 // 규칙 결과로 폴백(키 미설정·오류·거부·학대 케이스)

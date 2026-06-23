@@ -20,6 +20,7 @@ type Filter = "all" | Stage;
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "전체" },
   { value: "crush", label: STAGE_LABEL.crush },
+  { value: "unrequited", label: STAGE_LABEL.unrequited },
   { value: "dating", label: STAGE_LABEL.dating },
   { value: "breakup", label: STAGE_LABEL.breakup },
 ];

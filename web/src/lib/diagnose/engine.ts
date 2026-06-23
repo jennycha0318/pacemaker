@@ -71,7 +71,7 @@ export function diagnose(stage: Stage, a: Answers): Diagnosis {
     return safetyDiagnosis();
   }
   let res: Diagnosis;
-  if (stage === "crush") res = diagnoseCrush(a);
+  if (stage === "crush" || stage === "unrequited") res = diagnoseCrush(a);
   else if (stage === "dating") res = diagnoseDating(a);
   else res = diagnoseBreakup(a);
   res.plan = makePlan(stage, res.score, a);
@@ -271,7 +271,7 @@ function diagnoseBreakup(a: Answers): Diagnosis {
 
 function makePlan(stage: Stage, score: number, a: Answers): Plan {
   const tier = score >= 65 ? "high" : score >= 45 ? "mid" : "low";
-  if (stage === "crush") return planCrush(tier);
+  if (stage === "crush" || stage === "unrequited") return planCrush(tier);
   if (stage === "dating") return planDating(tier);
   return planBreakup(tier, a);
 }

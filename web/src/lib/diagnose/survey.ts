@@ -1,4 +1,4 @@
-export type Stage = "crush" | "dating" | "breakup";
+export type Stage = "crush" | "unrequited" | "dating" | "breakup";
 
 export interface Option {
   v: string;
@@ -58,43 +58,48 @@ const ABUSE_Q: Question = {
 };
 const COMMON = [PARTNER_Q, SELF_ATTACH_Q, SELF_URGENCY_Q, FREE_TEXT_Q];
 
+// 썸·짝사랑 공통 설문 — 둘 다 '다가가기/고백 타이밍' 판단이라 같은 질문·점수 로직을 공유.
+const CRUSH_SURVEY: Question[] = [
+  { id: "period", title: "알게 된 지 얼마나 됐나요?", options: [
+    { v: "lt1m", label: "1개월 미만" },
+    { v: "1to3m", label: "1~3개월" },
+    { v: "3to6m", label: "3~6개월" },
+    { v: "gt6m", label: "6개월 이상" },
+  ] },
+  { id: "trend", title: "요즘 둘의 연락 빈도는?", options: [
+    { v: "increasing", label: "점점 늘어나요", note: "좋은 신호" },
+    { v: "stable", label: "비슷하게 유지돼요" },
+    { v: "decreasing", label: "점점 줄어들어요", note: "주의" },
+  ] },
+  { id: "warmth", title: "상대의 반응 온도는 어떤가요?", options: [
+    { v: "hot", label: "적극적이에요 (먼저 연락·관심)" },
+    { v: "warm", label: "호의적이에요" },
+    { v: "lukewarm", label: "미적지근해요" },
+    { v: "cold", label: "잘 모르겠어요 / 거리감" },
+  ] },
+  { id: "initiation", title: "연락은 주로 누가 먼저 하나요?", options: [
+    { v: "partner_more", label: "상대가 더 자주 먼저", note: "강한 호감 신호" },
+    { v: "balanced", label: "비슷해요" },
+    { v: "me_more", label: "거의 내가 먼저", note: "일방적 주의" },
+  ] },
+  { id: "signals", title: "둘 사이 호감 신호(따로 만남·플러팅·스킨십)는?", options: [
+    { v: "strong", label: "자주 있고 분위기도 좋아요" },
+    { v: "some", label: "가끔 있어요" },
+    { v: "weak", label: "거의 없어요" },
+  ] },
+  ...COMMON,
+];
+
 export const STAGE_LABEL: Record<Stage, string> = {
   crush: "썸",
+  unrequited: "짝사랑",
   dating: "연애 중",
   breakup: "이별 후",
 };
 
 export const SURVEYS: Record<Stage, Question[]> = {
-  crush: [
-    { id: "period", title: "알게 된 지 얼마나 됐나요?", options: [
-      { v: "lt1m", label: "1개월 미만" },
-      { v: "1to3m", label: "1~3개월" },
-      { v: "3to6m", label: "3~6개월" },
-      { v: "gt6m", label: "6개월 이상" },
-    ] },
-    { id: "trend", title: "요즘 둘의 연락 빈도는?", options: [
-      { v: "increasing", label: "점점 늘어나요", note: "좋은 신호" },
-      { v: "stable", label: "비슷하게 유지돼요" },
-      { v: "decreasing", label: "점점 줄어들어요", note: "주의" },
-    ] },
-    { id: "warmth", title: "상대의 반응 온도는 어떤가요?", options: [
-      { v: "hot", label: "적극적이에요 (먼저 연락·관심)" },
-      { v: "warm", label: "호의적이에요" },
-      { v: "lukewarm", label: "미적지근해요" },
-      { v: "cold", label: "잘 모르겠어요 / 거리감" },
-    ] },
-    { id: "initiation", title: "연락은 주로 누가 먼저 하나요?", options: [
-      { v: "partner_more", label: "상대가 더 자주 먼저", note: "강한 호감 신호" },
-      { v: "balanced", label: "비슷해요" },
-      { v: "me_more", label: "거의 내가 먼저", note: "일방적 주의" },
-    ] },
-    { id: "signals", title: "둘 사이 호감 신호(따로 만남·플러팅·스킨십)는?", options: [
-      { v: "strong", label: "자주 있고 분위기도 좋아요" },
-      { v: "some", label: "가끔 있어요" },
-      { v: "weak", label: "거의 없어요" },
-    ] },
-    ...COMMON,
-  ],
+  crush: CRUSH_SURVEY,
+  unrequited: CRUSH_SURVEY,
   dating: [
     { id: "period", title: "사귄 지 얼마나 됐나요?", options: [
       { v: "lt3m", label: "3개월 미만" },
