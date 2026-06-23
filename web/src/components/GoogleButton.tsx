@@ -14,7 +14,11 @@ export function GoogleButton() {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${location.origin}/auth/callback` },
+        options: {
+          redirectTo: `${location.origin}/auth/callback`,
+          // 항상 구글 계정 선택창을 표시(브라우저에 로그인된 기존 계정들 중에서 고르게)
+          queryParams: { prompt: "select_account" },
+        },
       });
       // 성공 시 브라우저가 구글로 리다이렉트됨(이 줄 이후 도달 안 함).
       // 에러면 리다이렉트 없이 반환 → 안내 표시.
