@@ -35,26 +35,31 @@ export async function getProfile(supabase: SupabaseClient): Promise<Profile | nu
 
 export async function saveProfile(
   supabase: SupabaseClient,
-  patch: { birthYear?: number | null; mbti?: string | null; attachment?: string | null },
+  patch: { birthYear?: number | null; mbti?: string | null; attachment?: string | null; name?: string | null },
 ): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("로그인이 필요해요.");
 
+  // 테이블 컬럼(birth_year/mbti/attachment)용
   const meta: Record<string, unknown> = {};
   if (patch.birthYear !== undefined) meta.birth_year = patch.birthYear;
   if (patch.mbti !== undefined) meta.mbti = patch.mbti || null;
   if (patch.attachment !== undefined) meta.attachment = patch.attachment || null;
 
+  // 메타데이터엔 닉네임(name)도 함께 — profiles 테이블엔 name 컬럼이 없어 메타데이터로만 보관
+  const metaData: Record<string, unknown> = { ...meta };
+  if (patch.name !== undefined) metaData.name = patch.name || null;
+
   // 1) 메타데이터 동기화 (즉시 가용·폴백) — profiles 테이블이 없어도 동작
   let metaOk = false;
   try {
-    const { error } = await supabase.auth.updateUser({ data: meta });
+    const { error } = await supabase.auth.updateUser({ data: metaData });
     metaOk = !error;
   } catch {
     metaOk = false;
   }
 
-  // 2) profiles 테이블 저장 (SoT) — 미생성/실패해도 메타데이터로 동작
+  // 2) profiles 테이블 저장 (SoT) — name 제외(컬럼 없음). 미생성/실패해도 메타데이터로 동작
   const row: Record<string, unknown> = { id: user.id, updated_at: new Date().toISOString(), ...meta };
   let tableOk = false;
   try {

@@ -15,6 +15,7 @@ const ATTACH = [
 type Status = "loading" | "idle" | "saving" | "saved" | "error";
 
 export function ProfileEditor() {
+  const [name, setName] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [mbti, setMbti] = useState("");
   const [attachment, setAttachment] = useState("");
@@ -22,8 +23,9 @@ export function ProfileEditor() {
   const [showSavedBanner, setShowSavedBanner] = useState(false);
 
   // 로드된 초기값(저장된 상태)을 보관해 dirty 계산에 사용
-  const initialRef = useRef({ birthYear: "", mbti: "", attachment: "" });
+  const initialRef = useRef({ name: "", birthYear: "", mbti: "", attachment: "" });
   const dirty =
+    name !== initialRef.current.name ||
     birthYear !== initialRef.current.birthYear ||
     mbti !== initialRef.current.mbti ||
     attachment !== initialRef.current.attachment;
@@ -34,13 +36,15 @@ export function ProfileEditor() {
         const supabase = createClient();
         const p = await getProfile(supabase);
         if (p) {
+          const nm = p.name ?? "";
           const by = p.birthYear ? String(p.birthYear) : "";
           const mb = p.mbti ?? "";
           const at = p.attachment ?? "";
+          setName(nm);
           setBirthYear(by);
           setMbti(mb);
           setAttachment(at);
-          initialRef.current = { birthYear: by, mbti: mb, attachment: at };
+          initialRef.current = { name: nm, birthYear: by, mbti: mb, attachment: at };
         }
       } catch {
         // 무시 — 빈 폼으로 시작
@@ -74,12 +78,13 @@ export function ProfileEditor() {
     try {
       const supabase = createClient();
       await saveProfile(supabase, {
+        name: name.trim() || null,
         birthYear: birthYear ? Number(birthYear) : null,
         mbti: mbti || null,
         attachment: attachment || null,
       });
       // 저장 성공 — 현재값을 초기값으로 갱신해 dirty 해제
-      initialRef.current = { birthYear, mbti, attachment };
+      initialRef.current = { name, birthYear, mbti, attachment };
       setStatus("saved");
       setShowSavedBanner(true);
     } catch {
@@ -105,6 +110,16 @@ export function ProfileEditor() {
         </div>
       )}
 
+      <label className="mb-1.5 block text-[13px] font-bold">닉네임</label>
+      <input
+        className="field-input mb-3.5"
+        value={name}
+        maxLength={20}
+        placeholder="결과에서 불릴 이름"
+        aria-label="닉네임"
+        onChange={(e) => { setName(e.target.value); touch(); }}
+      />
+
       <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
       <div className="mb-3.5"><YearSelect value={birthYear} onChange={(v) => { setBirthYear(v); touch(); }} /></div>
 
@@ -120,9 +135,8 @@ export function ProfileEditor() {
       >
         {ATTACH.map((a) => <option key={a.v} value={a.v}>{a.label}</option>)}
       </select>
-      <p className="mb-3 mt-1.5 text-[12.5px] text-muted">MBTI·나이차는 참고 요소예요. 핵심 판단은 진단 신호를 기준으로 해요.</p>
 
-      <button className="btn btn-primary" onClick={save} disabled={status === "saving"}>
+      <button className="btn btn-primary mt-4" onClick={save} disabled={status === "saving"}>
         {status === "saving" ? "저장 중…" : status === "saved" ? "저장됨 ✓" : "저장"}
       </button>
       {status === "error" && <p className="mt-2 text-center text-[13px] text-bad">저장에 실패했어요. 다시 시도해 주세요.</p>}
