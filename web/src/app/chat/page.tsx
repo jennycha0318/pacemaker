@@ -17,16 +17,20 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [context, setContext] = useState("");
   const [name, setName] = useState("");
+  const [diagnosisId, setDiagnosisId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   // 컨텍스트 로드: ① 결과 페이지에서 넘어온 handoff 우선(1회 소비) → ② 없으면 로그인 사용자의 최근 진단
   useEffect(() => {
-    let handoff = "";
+    let hasHandoff = false;
     try {
-      handoff = sessionStorage.getItem("qpit:chatContext") || "";
-      if (handoff) {
-        setContext(handoff);
-        sessionStorage.removeItem("qpit:chatContext");
+      const raw = sessionStorage.getItem("qpit:chatHandoff");
+      if (raw) {
+        const h = JSON.parse(raw) as { context?: string; diagnosisId?: string | null };
+        if (h.context) setContext(h.context);
+        if (h.diagnosisId) setDiagnosisId(h.diagnosisId);
+        hasHandoff = !!h.context;
+        sessionStorage.removeItem("qpit:chatHandoff");
       }
     } catch {
       // 무시
@@ -38,13 +42,14 @@ export default function ChatPage() {
         if (!data?.user) return;
         const p = await getProfile(supabase);
         if (p?.name) setName(p.name);
-        if (handoff) return; // 결과 핸드오프가 있으면 DB 최근 진단 조회 생략
+        if (hasHandoff) return; // 결과 핸드오프가 있으면 DB 최근 진단 조회 생략
         const { data: rows } = await supabase
           .from("diagnoses")
-          .select("stage, score, result, created_at")
+          .select("id, stage, score, result, created_at")
           .order("created_at", { ascending: false })
           .limit(1);
-        const r = rows?.[0] as { stage?: string; result?: Record<string, unknown> } | undefined;
+        const r = rows?.[0] as { id?: string; stage?: string; result?: Record<string, unknown> } | undefined;
+        if (r?.id) setDiagnosisId(r.id);
         const d = r?.result as
           | { scoreTitle?: string; score?: number; reason?: string; plan?: { when?: string } }
           | undefined;
@@ -74,7 +79,7 @@ export default function ChatPage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next, context, name: name || undefined }),
+        body: JSON.stringify({ messages: next, context, name: name || undefined, diagnosisId: diagnosisId || undefined }),
       });
       const data = await res.json();
       setMessages((m) => [...m, { role: "assistant", content: data.reply ?? "답변을 가져오지 못했어요." }]);

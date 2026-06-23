@@ -4,7 +4,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { AskCupidButton } from "@/components/AskCupidButton";
 import { scoreColor, scoreBadge, toneColor } from "@/lib/diagnose/colors";
 
-export function Report({ d }: { d: Diagnosis }) {
+export function Report({ d, diagnosisId }: { d: Diagnosis; diagnosisId?: string }) {
   const color = scoreColor(d.score);
   const badge = scoreBadge(d.score);
   const C = 2 * Math.PI * 52;
@@ -163,7 +163,7 @@ export function Report({ d }: { d: Diagnosis }) {
       {/* 이 결과로 큐핏 챗봇 상담 연결 (위기·안전 케이스는 상담 연결을 우선하므로 제외) */}
       {!d.needsSupport && (
         <div className="mt-7">
-          <AskCupidButton d={d} />
+          <AskCupidButton d={d} diagnosisId={diagnosisId} />
         </div>
       )}
 

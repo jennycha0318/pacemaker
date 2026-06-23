@@ -5,12 +5,12 @@ import type { Diagnosis } from "@/lib/diagnose/engine";
 
 // 결과 → 채팅 연결. 현재 진단 요약을 sessionStorage로 넘겨(handoff) 챗봇이 컨텍스트로 사용.
 // (로그인 여부와 무관하게 '방금 본 그 결과'로 상담되도록)
-export function AskCupidButton({ d }: { d: Diagnosis }) {
+export function AskCupidButton({ d, diagnosisId }: { d: Diagnosis; diagnosisId?: string }) {
   const router = useRouter();
   function go() {
     try {
-      const ctx = `점수:${d.score}점(${d.scoreTitle}) / 추천 타이밍:${d.plan?.when ?? ""} / 추천 수단:${d.plan?.channel ?? ""} / 해석:${(d.reason ?? "").slice(0, 600)}`;
-      sessionStorage.setItem("qpit:chatContext", ctx);
+      const context = `점수:${d.score}점(${d.scoreTitle}) / 추천 타이밍:${d.plan?.when ?? ""} / 추천 수단:${d.plan?.channel ?? ""} / 해석:${(d.reason ?? "").slice(0, 600)}`;
+      sessionStorage.setItem("qpit:chatHandoff", JSON.stringify({ context, diagnosisId: diagnosisId ?? null }));
     } catch {
       // 무시 — 컨텍스트 없이도 채팅 가능
     }

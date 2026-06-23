@@ -94,6 +94,7 @@ export default function DiagnosePage() {
   const [showOverDiagnose, setShowOverDiagnose] = useState(true); // 안내 닫기
   const [blockedBypass, setBlockedBypass] = useState(false); // S3 차단 우회 경고
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [savedId, setSavedId] = useState<string | null>(null); // 저장된 진단 row id(채팅 연결용)
   const savingRef = useRef(false);    // 중복 저장(insert) 방지
   const advancingRef = useRef(false); // 설문 빠른 연타 방지
 
@@ -118,12 +119,12 @@ export default function DiagnosePage() {
           if (pending && pending.result && pending.stage) {
             try {
               const d = pending.result;
-              await supabase.from("diagnoses").insert({
-                user_id: user.id,
-                stage: pending.stage,
-                score: d.score,
-                result: d,
-              });
+              const { data: ins } = await supabase
+                .from("diagnoses")
+                .insert({ user_id: user.id, stage: pending.stage, score: d.score, result: d })
+                .select("id")
+                .single();
+              if (ins?.id) setSavedId(ins.id as string);
             } catch {
               // insert 실패해도 결과는 보여줌(아래에서 복원)
             }
@@ -172,12 +173,12 @@ export default function DiagnosePage() {
         setSaveStatus("guest");
         return;
       }
-      const { error } = await supabase.from("diagnoses").insert({
-        user_id: user.id,
-        stage: s,
-        score: d.score,
-        result: d,
-      });
+      const { data: ins, error } = await supabase
+        .from("diagnoses")
+        .insert({ user_id: user.id, stage: s, score: d.score, result: d })
+        .select("id")
+        .single();
+      if (!error && ins?.id) setSavedId(ins.id as string);
       setSaveStatus(error ? "error" : "saved");
     } catch {
       setSaveStatus("error");
@@ -299,7 +300,7 @@ export default function DiagnosePage() {
 
   function reset() {
     setPhase("stage"); setAnswers({}); setQIndex(0); setResult(null);
-    setFree(""); setSaveStatus("idle"); setPartnerBirthYear(""); setPartnerMbti("");
+    setFree(""); setSaveStatus("idle"); setPartnerBirthYear(""); setPartnerMbti(""); setSavedId(null);
   }
 
   // ── 프로필 로딩 중 ──
@@ -435,7 +436,7 @@ export default function DiagnosePage() {
           </div>
         )}
 
-        <Report d={result} />
+        <Report d={result} diagnosisId={savedId ?? undefined} />
         <button className="btn btn-ghost mt-5" onClick={reset}>다시 진단하기</button>
         {saveStatus === "guest" && (
           <Link href="/" className="btn btn-ghost mt-3 block text-center">처음으로</Link>

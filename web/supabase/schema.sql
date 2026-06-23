@@ -51,3 +51,30 @@ create policy "profiles_insert_own"
 create policy "profiles_update_own"
   on public.profiles for update
   using (auth.uid() = id);
+
+-- 진단별 상담(챗봇) 기록 — 메시지당 Q&A 누적. 히스토리에서 결과와 함께 표시.
+create table if not exists public.diagnosis_chats (
+  id uuid primary key default gen_random_uuid(),
+  diagnosis_id uuid references public.diagnoses (id) on delete cascade,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  q text not null,                     -- 사용자 질문
+  a text not null,                     -- 큐핏 답변
+  created_at timestamptz not null default now()
+);
+
+alter table public.diagnosis_chats enable row level security;
+
+create policy "diagnosis_chats_select_own"
+  on public.diagnosis_chats for select
+  using (auth.uid() = user_id);
+
+create policy "diagnosis_chats_insert_own"
+  on public.diagnosis_chats for insert
+  with check (auth.uid() = user_id);
+
+create policy "diagnosis_chats_delete_own"
+  on public.diagnosis_chats for delete
+  using (auth.uid() = user_id);
+
+create index if not exists diagnosis_chats_diag
+  on public.diagnosis_chats (diagnosis_id, created_at);
