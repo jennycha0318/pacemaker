@@ -70,17 +70,6 @@ const SYSTEM_PROMPT = `당신은 한국어로 답하는 'AI 연애 컨설턴트'
 - message: 요청된 경우에만, 사용자가 상대에게 실제로 보낼 만한 자연스러운 한국어 메시지 1개(2~5줄). 부담스럽지 않고 진솔하게. 요청되지 않으면 빈 문자열("").
 - 반드시 주어진 JSON 스키마로만 출력하세요.`;
 
-// [임시 진단용] 런타임에 키가 존재하는지만 확인(값·전체키는 노출하지 않음). 확인 후 제거 예정.
-export async function GET() {
-  const k = process.env.ANTHROPIC_API_KEY || "";
-  return NextResponse.json({
-    hasKey: k.length > 0,
-    keyLen: k.length,
-    startsSkAnt: k.startsWith("sk-ant"),
-    model: MODEL,
-  });
-}
-
 export async function POST(req: Request) {
   let stage: Stage;
   let answers: Answers;

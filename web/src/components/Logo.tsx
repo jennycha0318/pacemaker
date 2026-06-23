@@ -46,11 +46,19 @@ export function Logo({ size = 40, className = "", decorative = false }: { size?:
 }
 
 // 로고 + 워드마크
-export function BrandLockup({ size = 36, className = "" }: { size?: number; className?: string }) {
+export function BrandLockup({ size = 36, className = "", pastel = false }: { size?: number; className?: string; pastel?: boolean }) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center ${pastel ? "gap-1.5" : "gap-2"} ${className}`}>
       <Logo size={size} decorative />
-      <span className="font-display text-[22px] font-bold tracking-tight text-ink">큐핏</span>
+      <span
+        className={`font-display font-bold tracking-tight ${
+          pastel
+            ? "bg-gradient-to-r from-primary to-accent bg-clip-text text-[20px] text-transparent"
+            : "text-[22px] text-ink"
+        }`}
+      >
+        큐핏
+      </span>
     </div>
   );
 }
