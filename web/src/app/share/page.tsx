@@ -50,7 +50,7 @@ export default function SharePage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-app flex-col px-5 py-10">
       <div className="flex justify-center">
-        <BrandLockup />
+        <BrandLockup pastel />
       </div>
 
       <div className="card mt-8">

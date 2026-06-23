@@ -24,7 +24,7 @@ export default async function LandingPage() {
           <div className="pointer-events-none absolute inset-0 -z-10 scale-150 rounded-full bg-gradient-to-br from-periwinkle/60 to-aqua/50 blur-2xl" />
           <Logo size={66} />
         </div>
-        <span className="mt-3 font-display text-[24px] font-bold tracking-tight text-ink">큐핏</span>
+        <span className="mt-3 font-display text-[24px] font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">큐핏</span>
         <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-primarySoft px-3 py-1 text-[12px] font-bold text-primaryDark">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 2l1.9 6.6L20 10l-6.1 1.4L12 18l-1.9-6.6L4 10l6.1-1.4z" />

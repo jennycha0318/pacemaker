@@ -7,7 +7,7 @@ export default function Loading() {
       <div className="pm-bounce">
         <Logo size={92} decorative />
       </div>
-      <span className="font-display text-[28px] font-bold tracking-tight text-ink">큐핏</span>
+      <span className="font-display text-[28px] font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">큐핏</span>
       <span className="text-[13px] font-bold text-primaryDark">AI 연애 타이밍 컨설팅</span>
     </div>
   );
