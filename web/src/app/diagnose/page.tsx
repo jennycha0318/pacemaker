@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { SURVEYS, type Stage } from "@/lib/diagnose/survey";
 import { diagnose, type Answers, type Diagnosis } from "@/lib/diagnose/engine";
 import { Report } from "@/components/Report";
+import { KakaoAnalysis } from "@/components/KakaoAnalysis";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
 import { getProfile, saveProfile } from "@/lib/profile";
 import { Logo } from "@/components/Logo";
@@ -314,7 +315,9 @@ export default function DiagnosePage() {
     return (
       <div className="min-h-[calc(100svh-9rem)]">
         <StepIndicator phase="me" meDone={hasProfileBirth} />
-        <Link href="/" className={BACK_BTN}>← 처음으로</Link>
+        {hasProfileBirth
+          ? <button onClick={() => setPhase("stage")} className={BACK_BTN}>← 상황</button>
+          : <Link href="/" className={BACK_BTN}>← 처음으로</Link>}
         <h2 className="mb-6 mt-3 text-[26px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
 
         <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
@@ -334,9 +337,7 @@ export default function DiagnosePage() {
     return (
       <div className="min-h-[calc(100svh-9rem)]">
         <StepIndicator phase="stage" meDone={hasProfileBirth} />
-        {hasProfileBirth
-          ? <Link href="/" className={BACK_BTN}>← 처음으로</Link>
-          : <button onClick={() => setPhase("me")} className={BACK_BTN}>← 내 정보</button>}
+        <button onClick={() => setPhase("me")} className={BACK_BTN}>← 내 정보</button>
         <h2 className="mb-6 mt-3 text-[26px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
         <div className="flex flex-col gap-3.5">
           {STAGES.map((s) => (
@@ -448,6 +449,7 @@ export default function DiagnosePage() {
         )}
 
         <Report d={result} diagnosisId={savedId ?? undefined} />
+        {!result.needsSupport && <KakaoAnalysis d={result} />}
         <button className="btn btn-ghost mt-5" onClick={reset}>다시 진단하기</button>
         {saveStatus === "guest" && (
           <Link href="/" className="btn btn-ghost mt-3 block text-center">처음으로</Link>

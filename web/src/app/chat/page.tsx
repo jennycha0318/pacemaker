@@ -121,18 +121,12 @@ export default function ChatPage() {
 
       <div className="flex items-end gap-2 border-t border-line pt-2.5">
         <textarea
-          className="field-input max-h-28 min-h-[46px] flex-1 resize-none py-3"
-          rows={1}
-          placeholder="메시지를 입력하세요"
+          className="field-input max-h-32 min-h-[46px] flex-1 resize-none py-3"
+          rows={2}
+          placeholder="메시지를 입력하세요 (Enter는 줄바꿈, 전송은 버튼으로)"
           aria-label="메시지 입력"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
         />
         <button
           className="btn btn-primary !w-auto shrink-0 px-5 py-3"
