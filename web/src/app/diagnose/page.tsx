@@ -87,6 +87,7 @@ export default function DiagnosePage() {
   const [showOverDiagnose, setShowOverDiagnose] = useState(true); // 안내 닫기
   const [blockedBypass, setBlockedBypass] = useState(false); // S3 차단 우회 경고
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [aiLoading, setAiLoading] = useState(false); // AI 해석·문구 보강 진행 중
   const savingRef = useRef(false);    // 중복 저장(insert) 방지
   const advancingRef = useRef(false); // 설문 빠른 연타 방지
 
@@ -225,7 +226,33 @@ export default function DiagnosePage() {
 
     setResult(d);
     setPhase("result");
-    saveDiagnosis(d, s);
+    enrich(d, s, merged); // 결과는 즉시 표시, AI 해석·문구 보강 후 저장
+  }
+
+  // AI 해석·문구 보강 — 점수·타이밍은 규칙 결과 유지. 실패/키 미설정 시 규칙 결과로 폴백.
+  async function enrich(d: Diagnosis, s: Stage, merged: Answers) {
+    setAiLoading(true);
+    let dFinal = d;
+    try {
+      const res = await fetch("/api/interpret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: s, answers: merged, minor }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { interpretation?: string; message?: string };
+        const next: Diagnosis = { ...d };
+        if (data.interpretation) next.reason = data.interpretation;
+        if (!d.hold && data.message) next.msg = data.message;
+        dFinal = next;
+        setResult(next);
+      }
+    } catch {
+      // 폴백: 규칙 결과 그대로
+    } finally {
+      setAiLoading(false);
+      saveDiagnosis(dFinal, s);
+    }
   }
 
   function selectOption(qid: string, v: string) {
@@ -343,6 +370,7 @@ export default function DiagnosePage() {
   if (phase === "result" && result) {
     return (
       <div>
+        {aiLoading && <p className="mb-3 text-center text-xs text-primaryDark">AI가 해석·문구를 다듬는 중…</p>}
         {saveStatus === "saving" && <p className="mb-3 text-center text-xs text-muted">결과 저장 중…</p>}
         {saveStatus === "saved" && <p className="mb-3 text-center text-xs text-good">히스토리에 저장됨</p>}
         {saveStatus === "error" && (

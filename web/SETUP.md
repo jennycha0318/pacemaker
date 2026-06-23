@@ -19,7 +19,10 @@ npm install
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+# AI 해석·문구(선택) — 서버 전용. 미설정 시 규칙 기반 결과로 자동 폴백.
+ANTHROPIC_API_KEY=sk-ant-...
 ```
+> ⚠️ `ANTHROPIC_API_KEY` 는 **서버 전용**입니다. `NEXT_PUBLIC_` 접두어를 붙이면 브라우저에 노출되니 절대 붙이지 마세요. 배포 시 Vercel **Project Settings → Environment Variables** 에도 동일하게 추가하세요.
 
 ## 4. DB 스키마 생성
 Supabase 대시보드 → **SQL Editor** → `web/supabase/schema.sql` 내용 붙여넣고 **Run**.
@@ -51,4 +54,5 @@ npm run dev
 - ✅ 이메일·구글 인증, 세션, 보호 라우트(미들웨어)
 - ✅ 규칙 기반 진단 + Supabase 저장 + 히스토리 조회/재열람(RLS)
 - ⬜ 받은 메시지 해석 · 캡처 업로드 (프로토타입에 있음 — 이식 예정)
-- ⬜ AI 개인화(Claude) 결합 (docs/product/ai-personalization.md)
+- ✅ AI 해석·문구 생성(Claude, 서버 라우트 `/api/interpret`) — 점수·타이밍은 규칙 엔진 유지, 해석·문구만 AI. 키 미설정 시 규칙 폴백.
+- ⬜ 받은 메시지 해석 · 캡처 업로드 (프로토타입에 있음 — 이식 예정)
