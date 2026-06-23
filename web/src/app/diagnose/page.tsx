@@ -86,6 +86,7 @@ export default function DiagnosePage() {
   const [stage, setStage] = useState<Stage>("crush");
   const [partnerBirthYear, setPartnerBirthYear] = useState("");
   const [partnerMbti, setPartnerMbti] = useState("");
+  const [partnerNote, setPartnerNote] = useState(""); // 상대 자유서술(AI가 성향 추출)
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [free, setFree] = useState("");
@@ -189,7 +190,7 @@ export default function DiagnosePage() {
 
   function finish(ans: Answers) {
     const s = stage;
-    const merged: Answers = { ...ans, myMbti, partnerMbti, myBirthYear, partnerBirthYear };
+    const merged: Answers = { ...ans, myMbti, partnerMbti, myBirthYear, partnerBirthYear, partnerText: partnerNote };
     const d = diagnose(s, merged);
     d.minor = minor; // 생년 기반 청소년 모드
 
@@ -294,13 +295,13 @@ export default function DiagnosePage() {
 
   function pickStage(s: Stage) {
     setStage(s); setAnswers({}); setQIndex(0); setFree("");
-    setPartnerBirthYear(""); setPartnerMbti("");
+    setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote("");
     setPhase("partner");
   }
 
   function reset() {
     setPhase("stage"); setAnswers({}); setQIndex(0); setResult(null);
-    setFree(""); setSaveStatus("idle"); setPartnerBirthYear(""); setPartnerMbti(""); setSavedId(null);
+    setFree(""); setSaveStatus("idle"); setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setSavedId(null);
   }
 
   // ── 프로필 로딩 중 ──
@@ -365,10 +366,20 @@ export default function DiagnosePage() {
         <div className="mb-4"><YearSelect value={partnerBirthYear} onChange={setPartnerBirthYear} ariaLabel="상대 출생연도" /></div>
 
         <label className="mb-1.5 block text-[13px] font-bold">상대 MBTI <span className="font-normal text-muted">(선택)</span></label>
-        <div className="mb-5"><MbtiSelect value={partnerMbti} onChange={setPartnerMbti} ariaLabel="상대 MBTI" /></div>
+        <div className="mb-4"><MbtiSelect value={partnerMbti} onChange={setPartnerMbti} ariaLabel="상대 MBTI" /></div>
+
+        <label className="mb-1.5 block text-[13px] font-bold">상대는 어떤 사람인가요? <span className="font-normal text-muted">(선택)</span></label>
+        <textarea
+          className="field-input min-h-[100px] resize-y leading-relaxed"
+          placeholder="예) 평소 표현이 적은 편이고, 바쁘면 연락이 뜸해져요. 최근 제 연락에 답이 느려졌어요…"
+          aria-label="상대에 대한 설명"
+          value={partnerNote}
+          onChange={(e) => setPartnerNote(e.target.value)}
+        />
+        <p className="mb-5 mt-1.5 text-[12.5px] text-muted">적어주시면 상대 성향까지 함께 분석해 더 맞춤 조언을 드려요.</p>
 
         <button className="btn btn-primary" onClick={() => setPhase("survey")}>다음</button>
-        <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
+        <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
       </div>
     );
   }
