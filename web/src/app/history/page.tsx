@@ -38,7 +38,7 @@ export default async function HistoryPage() {
   }
 
   return (
-    <div>
+    <div className="min-h-[calc(100svh-9rem)]">
       <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">진단 히스토리</h2>
       <p className="mb-5 text-sm text-muted">지난 진단 결과를 다시 볼 수 있어요.</p>
 

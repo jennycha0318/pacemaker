@@ -27,8 +27,8 @@ export default async function ProfilePage() {
   );
 
   return (
-    <div>
-      <h2 className="mb-4 text-[26px] font-bold tracking-tight">내 프로필</h2>
+    <div className="min-h-[calc(100svh-9rem)]">
+      <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">내 프로필</h2>
       <div className="card mb-4">
         <Row k="이름" v={name} />
         <Row k="이메일" v={user?.email ?? "-"} />

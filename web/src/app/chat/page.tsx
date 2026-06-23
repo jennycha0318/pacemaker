@@ -91,9 +91,9 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100svh-12rem)] flex-col">
-      <h2 className="text-[22px] font-bold tracking-tight">큐핏 상담</h2>
-      <p className="mb-3 text-[12.5px] text-muted">진단 결과나 연애 고민을 편하게 물어보세요.</p>
+    <div className="flex min-h-[calc(100svh-9rem)] flex-col">
+      <h2 className="mb-1.5 text-[26px] font-bold tracking-tight">큐핏 상담</h2>
+      <p className="mb-5 text-sm text-muted">진단 결과나 연애 고민을 편하게 물어보세요.</p>
 
       <div className="flex-1 space-y-3 overflow-y-auto pb-3">
         {messages.map((m, i) => (
