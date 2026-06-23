@@ -11,11 +11,11 @@
       <stop offset="1" stop-color="#a9e6e2"/>
     </linearGradient>
   </defs>
-  <path d="M256 448 C120 360 48 280 48 192 C48 130 96 86 156 86 C200 86 234 112 256 150 C278 112 312 86 356 86 C416 86 464 130 464 192 C464 280 392 360 256 448 Z" fill="url(#gf)" stroke="url(#g)" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
-  <g stroke="url(#g)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <line x1="58" y1="418" x2="400" y2="138"/>
-    <path d="M64 442 L75 406 L37 408" stroke-width="14"/>
-    <path d="M92 419 L103 383 L65 385" stroke-width="14"/>
+  <line x1="48" y1="408" x2="411" y2="149" stroke="url(#g)" stroke-width="16" stroke-linecap="round"/>
+  <path d="M256 430 C146 358 86 292 86 222 C86 172 124 136 172 136 C208 136 236 158 256 188 C276 158 304 136 340 136 C388 136 426 172 426 222 C426 292 366 358 256 430 Z" fill="url(#gf)" stroke="url(#g)" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
+  <g stroke="url(#g)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M50 431 L59 400 L37 399"/>
+    <path d="M76 413 L86 381 L63 380"/>
   </g>
-  <path d="M456 92 L444 137 L398 140 L410 95 Z" fill="url(#g)"/>
+  <path d="M466 110 L453 151 L411 149 L423 109 Z" fill="url(#g)"/>
 </svg>
