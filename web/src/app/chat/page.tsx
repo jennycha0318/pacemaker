@@ -11,6 +11,14 @@ const GREETING: Msg = {
   content: "안녕하세요, 큐핏이에요. 방금 받은 진단이나 연애 고민에 대해 편하게 물어보세요. 무엇이 궁금하세요?",
 };
 
+// 질문 유형 칩 — 클릭 시 입력창에 시작 문장을 채워 답변을 해당 유형으로 라우팅(앵무새 처방 방지)
+const CHIPS: { label: string; q: string }[] = [
+  { label: "상대 마음", q: "상대가 지금 무슨 마음일지 더 자세히 해석해 주세요." },
+  { label: "내 감정 다스리기", q: "지금 제 마음이 너무 복잡한데, 어떻게 다스리면 좋을까요?" },
+  { label: "문구 다듬기", q: "상대에게 보낼 메시지를 자연스럽게 다듬어 주세요." },
+  { label: "그 다음엔?", q: "이렇게 했는데도 상대가 반응이 없으면 그다음엔 어떻게 해야 할까요?" },
+];
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([GREETING]);
   const [input, setInput] = useState("");
@@ -19,6 +27,7 @@ export default function ChatPage() {
   const [name, setName] = useState("");
   const [diagnosisId, setDiagnosisId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
 
   // 컨텍스트 로드: ① 결과 페이지에서 넘어온 handoff 우선(1회 소비) → ② 없으면 로그인 사용자의 최근 진단
   useEffect(() => {
@@ -119,8 +128,22 @@ export default function ChatPage() {
         <div ref={endRef} />
       </div>
 
+      <div className="flex flex-wrap gap-1.5 pb-2">
+        {CHIPS.map((c) => (
+          <button
+            key={c.label}
+            type="button"
+            onClick={() => { setInput(c.q); taRef.current?.focus(); }}
+            className="rounded-full border border-primary/30 bg-white/60 px-3 py-1 text-[12.5px] font-bold text-primaryDark backdrop-blur transition active:scale-95 hover:bg-primarySoft"
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex items-end gap-2 border-t border-line pt-2.5">
         <textarea
+          ref={taRef}
           className="field-input max-h-32 min-h-[46px] flex-1 resize-none py-3"
           rows={2}
           placeholder="메시지를 입력하세요 (Enter는 줄바꿈, 전송은 버튼으로)"

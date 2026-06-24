@@ -158,6 +158,19 @@ export function Report({ d, diagnosisId }: { d: Diagnosis; diagnosisId?: string 
           )}
         </div>
 
+        {/* 나에게 건네는 한마디 — 연락을 권하지 않는(보류·차단·안전) 상황의 정서적 동반 */}
+        {d.hold && d.selfMessage && (
+          <div className="card bg-gradient-to-br from-[#f3effb] to-[#eef5f4]">
+            <p className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primaryDark">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="shrink-0 text-primary">
+                <path d="M12 21s-7.5-4.6-10-9.2C.4 8.4 2 5 5.3 5c2 0 3.3 1.2 4.2 2.5l.5.8.5-.8C11.4 6.2 12.7 5 14.7 5 18 5 19.6 8.4 22 11.8 19.5 16.4 12 21 12 21z" />
+              </svg>
+              나에게 건네는 한마디
+            </p>
+            <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{d.selfMessage}</p>
+          </div>
+        )}
+
       </section>
 
       {/* 카톡 대화 분석 결과(선택 옵션) */}

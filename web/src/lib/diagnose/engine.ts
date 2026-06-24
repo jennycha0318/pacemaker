@@ -19,6 +19,7 @@ export interface Diagnosis {
   msgLabel: string;
   msg?: string;
   hold?: string;
+  selfMessage?: string; // 연락을 권하지 않는(보류·차단·안전) 상황에서 사용자 자신에게 건네는 위로 한마디
   plan: Plan;
   needsSupport?: boolean; // 정서 위기 신호 → 상담 연결 노출
   minor?: boolean; // 미성년(10대) → 청소년 눈높이 톤 + 지지 강화
@@ -53,6 +54,7 @@ function safetyDiagnosis(): Diagnosis {
     ],
     msgLabel: "지금은 메시지보다 도움을",
     hold: "지금은 연락 문구를 고민할 때가 아니라, 안전을 확보하고 전문기관의 도움을 받을 때예요. 위급하면 112.",
+    selfMessage: "무서웠을 텐데 여기까지 온 것만으로도 충분히 용감했어요. 지금 가장 지켜야 할 사람은 상대가 아니라 나 자신이에요. 오늘은 내 안전을 1순위에 두기로 해요.",
     plan: {
       when: "지금은 안전 확보가 먼저예요",
       tone: "bad",
@@ -130,6 +132,7 @@ function diagnoseCrush(a: Answers): Diagnosis {
     res.risks = ["답 없는 호감에 집착하면 본인이 가장 힘들어져요.", "상대가 거리를 두면 그 신호를 존중하세요."];
     res.msgLabel = "지금은 고백 메시지보다";
     res.hold = "지금은 고백 문구를 보내기보다, 가벼운 일상 공유로 ‘편안한 접점’을 유지하는 단계예요. 무리한 직진은 권하지 않습니다.";
+    res.selfMessage = "마음이 큰 만큼 조급해지는 건 당연해요. 그 마음을 다그치지 말고, 나를 설레게 할 사람이 또 있을 수 있다는 것도 기억해요. 나는 충분히 사랑받을 사람이에요.";
   }
   if (clingy) res.risks.unshift("나만 주도하고 있어요. 연락 빈도를 의식적으로 줄여 상대의 자발성을 확인하세요.");
   res.needsSupport = (clingy && score < 45) || ft.needsSupport;
@@ -228,6 +231,7 @@ function diagnoseBreakup(a: Answers): Diagnosis {
     res.risks = ["반복·우회 연락은 스토킹으로 비칠 수 있어요. 절대 금물.", "상대의 명확한 거부 의사를 존중하는 것이 가장 품위 있는 선택입니다.", "당신의 회복과 일상이 지금 가장 중요합니다."];
     res.msgLabel = "지금은 메시지를 보내지 마세요";
     res.hold = "지금 어떤 메시지도, 어떤 경로로도 보내지 마세요. 차단은 분명한 신호예요. 연락하고 싶은 충동이 들면 보내는 대신 그 마음을 메모로만 남겨두세요.";
+    res.selfMessage = "차단이라는 말이 가슴을 쿵 내려앉게 했을 거예요. 연락하고 싶은 마음은 당신이 그만큼 진심이었다는 증거지, 잘못이 아니에요. 그 마음, 보내는 대신 오늘은 나를 돌보는 데 써요.";
     res.needsSupport = true;
     return res;
   }
@@ -253,6 +257,7 @@ function diagnoseBreakup(a: Answers): Diagnosis {
     res.risks = ["불안에 못 이긴 연락은 ‘아직 못 놓았구나’ 인상만 줘요.", "상대의 SNS 반복 확인·추궁은 금물입니다."];
     res.msgLabel = "지금 보낼 메시지보다";
     res.hold = "지금은 연락 문구를 다듬을 때가 아니라, 거리를 두고 나를 회복하며 ‘무엇을 바꿀지’ 정리할 시기예요. 2~3주 뒤 다시 진단해 보세요.";
+    res.selfMessage = "연락하고 싶은 마음이 올라오는 건 너무 자연스러워요. 그 마음을 억지로 부정하지 말고, 오늘은 상대가 아니라 나를 회복시키는 데 한 걸음만 써보기로 해요.";
   } else {
     res.reason = "지금 재회 시도는 권하지 않아요. 시간이 너무 이르거나 회복이 어려운 신호가 보입니다. 무리한 연락은 가능성을 더 닫습니다.";
     res.actions = [
@@ -263,6 +268,7 @@ function diagnoseBreakup(a: Answers): Diagnosis {
     res.risks = ["반복 연락·집착은 스토킹으로 비칠 수 있어요. 절대 금물.", "상대가 명확히 거부하면 더는 시도하지 마세요. 당신의 회복이 우선입니다."];
     res.msgLabel = "지금은 메시지를 보내지 마세요";
     res.hold = "지금 어떤 메시지도 재회 확률을 높이지 못해요. 오히려 닫힌 문을 더 잠급니다. 연락 충동이 들면 보내는 대신 그 마음을 기록만 해두세요.";
+    res.selfMessage = "그리움이 밀려오는 밤이 있을 거예요. 그 마음이 약해서가 아니에요. 충동이 들면 보내는 대신 여기 한 줄로 적어두고, 오늘은 나를 토닥여 주기로 해요.";
   }
   if (otherPerson) res.risks.unshift("상대에게 새로운 사람이 있다면, 끼어드는 연락은 역효과예요. 거리를 두고 상황을 지켜보세요.");
   if (clingy) res.risks.unshift("불안에 떠밀린 잦은 연락이 감지돼요. 지금은 연락을 멈추고 나를 회복하는 것이 최우선입니다.");

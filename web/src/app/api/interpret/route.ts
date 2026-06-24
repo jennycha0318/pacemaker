@@ -21,8 +21,12 @@ const OUTPUT_SCHEMA = {
       type: "string",
       description: "상대에게 보낼 자연스러운 한국어 메시지 1개(2~5줄). 연락을 권하지 않는 상황이면 빈 문자열.",
     },
+    selfMessage: {
+      type: "string",
+      description: "상대가 아니라 사용자 자신에게 건네는 따뜻한 위로·다짐 한마디. 특히 연락을 권하지 않는 보류·차단·안전 상황에서 2~3줄로 꼭 채울 것.",
+    },
   },
-  required: ["interpretation", "message"],
+  required: ["interpretation", "message", "selfMessage"],
   additionalProperties: false,
 } as const;
 
@@ -36,6 +40,7 @@ function fallback(d: Diagnosis) {
     source: "fallback" as const,
     interpretation: d.reason ?? "",
     message: d.hold ? "" : d.msg ?? "",
+    selfMessage: d.selfMessage ?? "",
   });
 }
 
@@ -69,6 +74,7 @@ const SYSTEM_PROMPT = `당신은 한국어로 답하는 'AI 연애 컨설턴트'
 [출력]
 - interpretation: 사용자가 직접 적은 내용을 반영해, 규칙 결과와 일관되게 상황을 2~4문장으로 해석·공감하세요. 진단명·단정은 금지.
 - message: 요청된 경우에만, 사용자가 상대에게 실제로 보낼 만한 자연스러운 한국어 메시지 1개(2~5줄). 부담스럽지 않고 진솔하게. 요청되지 않으면 빈 문자열("").
+- selfMessage: 상대가 아니라 사용자 자신에게 건네는 따뜻한 한마디. 특히 연락을 권하지 않는 상황(보류·차단·안전)에서는 사용자의 마음을 다독이는 위로 한 줄을 꼭 채우세요(공감 → 정상화 → 자기돌봄). 진단명·단정 금지.
 - 반드시 주어진 JSON 스키마로만 출력하세요.`;
 
 export async function POST(req: Request) {
@@ -125,7 +131,12 @@ export async function POST(req: Request) {
     `2) message: ${
       wantMessage
         ? "지금 상대에게 보낼 만한 자연스러운 메시지 1개(2~5줄)를 작성하세요. '상대에 대한 설명'이 있으면 상대 성향에 맞는 톤으로 맞춰주세요."
-        : '빈 문자열("")로 두세요. 지금은 연락을 권하지 않는 상황입니다.'
+        : '빈 문자열("")로 두세요. 지금은 상대에게 연락을 권하지 않는 상황입니다.'
+    }`,
+    `3) selfMessage: ${
+      wantMessage
+        ? `상대가 아니라 ${honorific} 자신에게 건네는 짧은 응원 한마디(1~2줄).`
+        : `지금은 연락 대신 마음을 추스를 때예요. 상대가 아니라 ${honorific} 자신에게 건네는 따뜻한 위로·다짐 한마디(2~3줄)를 쓰세요. 연락하고 싶은 충동을 비난하지 말고 "자연스러운 마음"이라고 정상화한 뒤, 오늘 나를 돌보는 쪽으로 부드럽게 이끌어 주세요. 규칙 결과(보류·차단 등)와 일관되게, 단정·진단 표현 없이.`
     }`,
   ]
     .filter(Boolean)
@@ -147,7 +158,7 @@ export async function POST(req: Request) {
     const textBlock = resp.content.find((b) => b.type === "text");
     if (!textBlock || textBlock.type !== "text") return fallback(d);
 
-    let parsed: { interpretation?: string; message?: string };
+    let parsed: { interpretation?: string; message?: string; selfMessage?: string };
     try {
       parsed = JSON.parse(textBlock.text);
     } catch {
@@ -156,7 +167,8 @@ export async function POST(req: Request) {
 
     const interpretation = (parsed.interpretation || "").trim() || d.reason || "";
     const message = wantMessage ? (parsed.message || "").trim() || d.msg || "" : "";
-    return NextResponse.json({ source: "ai" as const, interpretation, message });
+    const selfMessage = (parsed.selfMessage || "").trim() || d.selfMessage || "";
+    return NextResponse.json({ source: "ai" as const, interpretation, message, selfMessage });
   } catch {
     // 호출 실패(네트워크·인증·과금 등) → 규칙 결과로 폴백
     return fallback(d);

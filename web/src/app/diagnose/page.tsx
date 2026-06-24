@@ -271,9 +271,10 @@ export default function DiagnosePage() {
       ]);
 
       if (interpretRes && interpretRes.ok) {
-        const data = (await interpretRes.json()) as { interpretation?: string; message?: string };
+        const data = (await interpretRes.json()) as { interpretation?: string; message?: string; selfMessage?: string };
         if (data.interpretation) next.reason = data.interpretation;
         if (!d.hold && data.message) next.msg = data.message;
+        if (d.hold && data.selfMessage) next.selfMessage = data.selfMessage;
       }
       if (imgRes && imgRes.ok) {
         const data = (await imgRes.json()) as { analysis?: string };
