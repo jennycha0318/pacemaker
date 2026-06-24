@@ -310,6 +310,7 @@ function planBreakup(tier: string, a: Answers): Plan {
       { time: "지금~2주", action: "연락을 멈추고 나를 회복하며 이별 원인을 복기하세요." },
       { time: "2~3주 후", action: "가벼운 안부 한 통으로 상대 반응을 테스트하세요." },
       { time: "반응이 좋으면", action: "대화를 조금씩 늘리며 자연스럽게 접점을 회복하세요." },
+      { time: "반응이 없거나 차가우면", action: "더 매달리지 말고 무연락으로 전환해 나를 회복하세요. 그리움이 올라오면 보내는 대신 기록만 남기세요." },
     ],
   };
   return {
@@ -317,6 +318,7 @@ function planBreakup(tier: string, a: Answers): Plan {
     steps: [
       { time: "지금~최소 3~4주", action: "무연락을 유지하고 일상·멘탈 회복을 최우선으로." },
       { time: "한 달 뒤", action: "미련인지 사랑인지 점검한 후 다시 진단해 보세요." },
+      { time: "그리움이 밀려올 때", action: "연락 충동은 보내지 말고 기록만 남기세요. 그 마음이 약해서가 아니에요." },
     ],
   };
 }
@@ -328,6 +330,7 @@ function planCrush(tier: string): Plan {
       { time: "2~3일 내", action: "둘만의 편안한 자리를 만드세요." },
       { time: "그 자리에서", action: "부담 낮은 말로 솔직하게 마음을 전하세요." },
       { time: "고백 후", action: "답을 재촉하지 말고 상대의 시간을 존중하세요." },
+      { time: "혹시 반응이 미지근하면", action: "재촉하지 말고 2~3일 텀을 두세요. 거절 신호라면 깔끔히 물러나 나를 지키는 게 우선이에요." },
     ],
   };
   if (tier === "mid") return {
@@ -336,6 +339,7 @@ function planCrush(tier: string): Plan {
       { time: "이번 주", action: "둘만의 만남을 자연스럽게 제안하세요." },
       { time: "만남에서", action: "가벼운 관심 표현으로 상대 반응을 확인하세요." },
       { time: "호감 신호가 늘면", action: "그때 고백 타이밍을 다시 진단하세요." },
+      { time: "신호가 계속 약하면", action: "고백을 미루고, 한 사람에게만 매달리지 않게 일상·다른 관계에도 마음을 나눠두세요." },
     ],
   };
   return {
@@ -343,6 +347,7 @@ function planCrush(tier: string): Plan {
     steps: [
       { time: "당분간", action: "편한 접점은 유지하되 내 연락 비중을 줄이세요." },
       { time: "상대가 다가오면", action: "그때 관계 진전을 고려하세요." },
+      { time: "마음이 힘들 때", action: "답 없는 호감에 집착하면 내가 가장 힘들어요. 거리를 두고 나를 돌보는 시간을 가지세요." },
     ],
   };
 }
@@ -353,6 +358,7 @@ function planDating(tier: string): Plan {
     steps: [
       { time: "다음 만남", action: "고마움·애정을 구체적으로 표현하세요." },
       { time: "평소", action: "둘만의 정기 루틴(데이트·대화)을 유지하세요." },
+      { time: "표현에 반응이 약해도", action: "서운함은 비난 없이 한 번만 전하고, 상대의 속도를 존중하세요." },
     ],
   };
   if (tier === "mid") return {
@@ -361,6 +367,7 @@ function planDating(tier: string): Plan {
       { time: "차분한 자리에서", action: "‘요즘 우리 어때?’ 열린 질문으로 대화를 시작하세요." },
       { time: "대화 중", action: "비난 없이 내 마음을 ‘나 전달법’으로 전하세요." },
       { time: "이후", action: "함께 웃는 작은 경험을 의도적으로 늘리세요." },
+      { time: "대화가 통하지 않으면", action: "혼자 끌고 가지 말고 상대의 의지를 확인하세요. 올라오는 불안은 ‘나 전달법’ 메모로 정리하세요." },
     ],
   };
   return {
@@ -369,6 +376,7 @@ function planDating(tier: string): Plan {
       { time: "곧", action: "회피하지 말고 관계 상태를 솔직히 점검하세요." },
       { time: "대화에서", action: "상대의 의지를 확인하세요 (혼자 끌고 가지 않기)." },
       { time: "결과에 따라", action: "관계 유지가 나를 해친다면 거리도 선택지입니다." },
+      { time: "점검이 통하지 않으면", action: "나를 지키는 선을 미리 정해두세요. 관계가 나를 갉아먹으면 거리두기도 건강한 선택이에요." },
     ],
   };
 }

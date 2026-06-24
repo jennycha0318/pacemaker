@@ -60,11 +60,11 @@ export default function ChatPage() {
         const r = rows?.[0] as { id?: string; stage?: string; result?: Record<string, unknown> } | undefined;
         if (r?.id) setDiagnosisId(r.id);
         const d = r?.result as
-          | { scoreTitle?: string; score?: number; reason?: string; plan?: { when?: string } }
+          | { scoreTitle?: string; score?: number; reason?: string; plan?: { when?: string }; kakaoAnalysis?: string }
           | undefined;
         if (d) {
           setContext(
-            `상황:${r?.stage ?? ""} / 점수:${d.score ?? "-"}점(${d.scoreTitle ?? ""}) / 추천 타이밍:${d.plan?.when ?? ""} / 해석:${d.reason ?? ""}`,
+            `상황:${r?.stage ?? ""} / 점수:${d.score ?? "-"}점(${d.scoreTitle ?? ""}) / 추천 타이밍:${d.plan?.when ?? ""} / 해석:${d.reason ?? ""}${d.kakaoAnalysis ? ` / 카톡 대화 분석(상대 말투·온도 참고):${d.kakaoAnalysis.slice(0, 400)}` : ""}`,
           );
         }
       } catch {
