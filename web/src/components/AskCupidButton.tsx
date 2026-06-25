@@ -9,7 +9,8 @@ export function AskCupidButton({ d, diagnosisId }: { d: Diagnosis; diagnosisId?:
   const router = useRouter();
   function go() {
     try {
-      const context = `점수:${d.score}점(${d.scoreTitle}) / 추천 타이밍:${d.plan?.when ?? ""} / 추천 수단:${d.plan?.channel ?? ""} / 해석:${(d.reason ?? "").slice(0, 600)}${d.kakaoAnalysis ? ` / 카톡 대화 분석(상대 말투·온도 참고):${d.kakaoAnalysis.slice(0, 400)}` : ""}`;
+      const band = d.score >= 65 ? "높은 편" : d.score >= 45 ? "보통" : "낮은 편";
+      const context = `상태:${d.scoreTitle}(가능성 ${band}) / 추천 타이밍:${d.plan?.when ?? ""} / 추천 수단:${d.plan?.channel ?? ""} / 해석:${(d.reason ?? "").slice(0, 600)}${d.kakaoAnalysis ? ` / 카톡 대화 분석(상대 말투·온도 참고):${d.kakaoAnalysis.slice(0, 400)}` : ""}`;
       sessionStorage.setItem("qpit:chatHandoff", JSON.stringify({ context, diagnosisId: diagnosisId ?? null }));
     } catch {
       // 무시 — 컨텍스트 없이도 채팅 가능

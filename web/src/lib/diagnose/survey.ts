@@ -66,6 +66,7 @@ const CRUSH_SURVEY: Question[] = [
     { v: "3to6m", label: "3~6개월" },
     { v: "gt6m", label: "6개월 이상" },
   ] },
+  ABUSE_Q,
   { id: "trend", title: "요즘 둘의 연락 빈도는?", options: [
     { v: "increasing", label: "점점 늘어나요", note: "좋은 신호" },
     { v: "stable", label: "비슷하게 유지돼요" },

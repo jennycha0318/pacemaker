@@ -71,8 +71,8 @@ function safetyDiagnosis(): Diagnosis {
 }
 
 export function diagnose(stage: Stage, a: Answers): Diagnosis {
-  // 안전 우선 — dating/breakup에서 학대 신고 시 점수 엔진·plan·compat 모두 건너뛴다.
-  if ((stage === "dating" || stage === "breakup") && a.abuse === "yes") {
+  // 안전 우선 — 모든 단계(썸·짝사랑 포함)에서 학대 신고 시 점수 엔진·plan·compat 모두 건너뛴다.
+  if (a.abuse === "yes") {
     return safetyDiagnosis();
   }
   let res: Diagnosis;

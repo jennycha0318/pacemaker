@@ -63,6 +63,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "no user message" }, { status: 400 });
   }
 
+  // 안전 하드 오버라이드 — 긴급·폭력·위기 신호는 AI 재량 답변 대신 고정 안전 안내(1366·112).
+  const EMERGENCY =
+    /자살|죽고\s*싶|죽고싶|자해|사라지고\s*싶|때려요|때렸|때린|때리는|폭행|구타|두들겨\s*맞|맞고\s*(있|살|지내)|폭력|협박|위협받|위협당|위협을\s*받|죽이겠|죽여\s*버|목\s*(졸|조르)|감금|가뒀|가두고|스토킹|스토커|강간|성폭행|성폭력|몰카/;
+  if (EMERGENCY.test(turns[turns.length - 1].content)) {
+    return NextResponse.json({
+      reply:
+        "지금 많이 위험하거나 힘든 상황일 수 있어요. 이건 큐핏이 도와드릴 수 있는 범위를 넘는 일이라, 전문기관의 도움을 꼭 받으셨으면 좋겠어요.\n\n• 위급하면 112 (경찰)\n• 여성긴급전화 1366 (24시간·폭력·위기 상담)\n• 자살예방 상담전화 109\n\n혼자 감당하지 마세요. 당신의 안전이 가장 중요해요.",
+    });
+  }
+
   // 키 미설정 → 챗봇 비활성 안내(앱은 동작)
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ reply: "지금은 상담 챗봇을 이용할 수 없어요. 잠시 후 다시 시도해 주세요." });
@@ -85,7 +95,10 @@ export async function POST(req: Request) {
     const block = resp.content.find((b) => b.type === "text");
     const reply = (block && block.type === "text" ? block.text : "").replace(/\*\*/g, "").trim();
     if (resp.stop_reason === "refusal" || !reply) {
-      return NextResponse.json({ reply: "그 부분은 도와드리기 어려워요. 다른 질문이 있으면 편하게 말씀해 주세요." });
+      return NextResponse.json({
+        reply:
+          "그 부분은 큐핏이 직접 돕기 어려운 주제예요. 혼자 감당하기 힘든 상황이라면 여성긴급전화 1366이나 112의 도움을 받는 것도 좋아요. 다른 이야기는 편하게 들려주세요.",
+      });
     }
 
     // 진단별 상담 기록 저장(베스트에포트) — diagnosisId + 로그인 상태일 때만.
