@@ -35,8 +35,12 @@ create table if not exists public.profiles (
   birth_year int,                      -- 출생연도 (청소년/성인 판정·나이차 참고)
   mbti text,                           -- 4글자 MBTI 또는 null(비공개/모름)
   attachment text,                     -- secure | anxious | avoidant | null
+  nickname text,                       -- 활동 닉네임(편집 가능). 로그인 이름은 auth.users에 보관.
   updated_at timestamptz not null default now()
 );
+
+-- 기존 profiles 테이블에 닉네임 컬럼이 없으면 추가(메타데이터→테이블로 이전해 영속화)
+alter table public.profiles add column if not exists nickname text;
 
 alter table public.profiles enable row level security;
 
