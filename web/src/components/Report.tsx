@@ -17,24 +17,9 @@ export function Report({ d, diagnosisId }: { d: Diagnosis; diagnosisId?: string 
 
   return (
     <div className="flex flex-col">
-      {/* 큐핏이 발견한 것 — 비자명한 통찰(있을 때만, 위기 케이스 제외) 최상단 강조 */}
-      {d.keyInsight && !d.needsSupport && (
-        <div className="mb-6 rounded-[18px] border border-primary/40 bg-gradient-to-br from-[#efeafc] to-[#e7f4f3] p-4">
-          <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-bold uppercase tracking-wide text-primaryDark">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z" />
-            </svg>
-            큐핏이 발견한 것
-          </p>
-          <p className="text-[15px] font-medium leading-relaxed text-ink">{d.keyInsight}</p>
-        </div>
-      )}
-
-      {/* ── 그룹 1: 결과 (위기 → 점수) ── */}
+      {/* ── ① 결과 (점수·한 줄 진단) ── */}
       <section className="flex flex-col gap-3.5">
         <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">결과</p>
-
-        {/* 점수 */}
         <div className="card text-center">
           <p className="mb-1 text-sm font-bold text-muted">{d.scoreTitle}</p>
           <div className="relative mx-auto my-1.5 h-40 w-40">
@@ -50,24 +35,47 @@ export function Report({ d, diagnosisId }: { d: Diagnosis; diagnosisId?: string 
           </div>
           <span className="inline-block rounded-full px-4 py-1.5 text-sm font-bold"
             style={{ color, background: `${color}1a` }}>{badge}</span>
-          <p className="mt-3 text-sm text-muted">{d.reason}</p>
         </div>
       </section>
 
-      {/* 큐핏의 예측 — 반증 가능한 한 줄. 재방문 시 '맞았나요?'로 검증(신뢰의 정점) */}
-      {d.prediction && !d.needsSupport && (
-        <section className="mt-7">
-          <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">큐핏의 예측</p>
-          <div className="card mt-3.5 border border-accent/40 bg-accent/5">
-            <p className="text-[15px] leading-relaxed text-ink">{d.prediction}</p>
-            <p className="mt-2.5 text-[12.5px] text-muted">다음에 다시 들르면 “이 예측, 맞았나요?”로 확인해요.</p>
-          </div>
-        </section>
-      )}
-
-      {/* ── 그룹 2: 다음 행동 (언제·어떻게 → 추천 액션 → 주의) ── */}
+      {/* ── ② 큐핏이 읽은 상황 (해석 + 통찰 + 카톡 근거를 하나로) ── */}
       <section className="mt-7 flex flex-col gap-3.5">
-        <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">다음 행동</p>
+        <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">큐핏이 읽은 상황</p>
+        <div className="card">
+          {/* 해석(읽기) — 리드 */}
+          <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{d.reason}</p>
+
+          {/* 특히, 이걸 발견했어요 — 비자명한 통찰(위기 케이스 제외) */}
+          {d.keyInsight && !d.needsSupport && (
+            <div className="mt-4 rounded-[14px] border border-primary/30 bg-gradient-to-br from-[#efeafc] to-[#e7f4f3] p-3.5">
+              <p className="mb-1 flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-primaryDark">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z" />
+                </svg>
+                특히, 이걸 발견했어요
+              </p>
+              <p className="text-[14.5px] font-medium leading-relaxed text-ink">{d.keyInsight}</p>
+            </div>
+          )}
+
+          {/* 카톡 대화에서 보면 — 캡처 분석(있을 때만) */}
+          {d.kakaoAnalysis && (
+            <div className="mt-4 border-t border-line pt-4">
+              <p className="mb-1.5 flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-primaryDark">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+                카톡 대화에서 보면
+              </p>
+              <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-muted">{d.kakaoAnalysis}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── ③ 그래서, 이렇게 (타이밍 → 액션 → 메시지 → 주의) ── */}
+      <section className="mt-7 flex flex-col gap-3.5">
+        <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">그래서, 이렇게</p>
 
         {/* 언제·어떻게 */}
         <div className="card">
@@ -101,61 +109,6 @@ export function Report({ d, diagnosisId }: { d: Diagnosis; diagnosisId?: string 
             ))}
           </ul>
         </div>
-
-        {/* 주의 — 3개 초과 시 나머지는 <details>로 접기 (서버 컴포넌트 유지) */}
-        <div className="card">
-          <p className="mb-3.5 text-xs font-bold uppercase tracking-wide text-primaryDark">이것만은 주의하세요</p>
-          <ul className="flex flex-col gap-2.5">
-            {d.risks.slice(0, 3).map((r, i) => (
-              <li key={i} className="flex gap-2.5 rounded-xl border border-[#f0dbe6] bg-[#faf1f6] px-3.5 py-3 text-sm">
-                <span className="font-bold text-bad">•</span>{r}
-              </li>
-            ))}
-          </ul>
-          {d.risks.length > 3 && (
-            <details className="group mt-2.5">
-              <summary className="cursor-pointer list-none text-[13px] font-bold text-primaryDark">
-                <span className="group-open:hidden">주의사항 {d.risks.length - 3}개 더 보기</span>
-                <span className="hidden group-open:inline">접기</span>
-              </summary>
-              <ul className="mt-2.5 flex flex-col gap-2.5">
-                {d.risks.slice(3).map((r, i) => (
-                  <li key={i} className="flex gap-2.5 rounded-xl border border-[#f0dbe6] bg-[#faf1f6] px-3.5 py-3 text-sm">
-                    <span className="font-bold text-bad">•</span>{r}
-                  </li>
-                ))}
-              </ul>
-            </details>
-          )}
-        </div>
-      </section>
-
-      {/* ── 그룹 3: 근거·참고 (판단 근거 → 메시지 → 성향·궁합) ── */}
-      <section className="mt-7 flex flex-col gap-3.5">
-        <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">근거·참고</p>
-
-        {/* 판단 근거 — 요인이 있을 때만(안전 우회 등 factors 빈 경우 숨김) */}
-        {factors.length > 0 && (
-        <div className="card">
-          <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-primaryDark">이렇게 판단했어요</p>
-          <p className="mb-3 text-[12.5px] leading-relaxed text-muted">점수 계산에 반영된 요인이에요. 당신이 부족하다는 뜻이 아니에요.</p>
-          <ul className="flex flex-col gap-2">
-            {factors.map((f, i) => {
-              const pos = f.delta > 0;
-              return (
-                <li key={i} className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm"
-                  style={{ background: pos ? "#e4f3f2" : "#f6e6ee" }}>
-                  <span className="text-[12.5px]" style={{ color: pos ? "#4fa3a2" : "#b96b8f" }}>{pos ? "▲" : "▼"}</span>
-                  <span className="flex-1">{f.label}</span>
-                  <span className="text-[13px] font-bold" style={{ color: pos ? "#4fa3a2" : "#b96b8f" }}>
-                    {pos ? "+" : ""}{f.delta}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        )}
 
         {/* 메시지 — hold(보류·주의)와 msg(예시)를 아이콘·톤으로 시각 구분 */}
         <div className={`card ${d.hold ? "bg-gradient-to-br from-[#faf1f6] to-[#f3e9f0]" : "bg-gradient-to-br from-[#eaeef8] to-[#e7f4f3]"}`}>
@@ -195,13 +148,67 @@ export function Report({ d, diagnosisId }: { d: Diagnosis; diagnosisId?: string 
           </div>
         )}
 
+        {/* 주의 — 3개 초과 시 나머지는 <details>로 접기 */}
+        <div className="card">
+          <p className="mb-3.5 text-xs font-bold uppercase tracking-wide text-primaryDark">이것만은 주의하세요</p>
+          <ul className="flex flex-col gap-2.5">
+            {d.risks.slice(0, 3).map((r, i) => (
+              <li key={i} className="flex gap-2.5 rounded-xl border border-[#f0dbe6] bg-[#faf1f6] px-3.5 py-3 text-sm">
+                <span className="font-bold text-bad">•</span>{r}
+              </li>
+            ))}
+          </ul>
+          {d.risks.length > 3 && (
+            <details className="group mt-2.5">
+              <summary className="cursor-pointer list-none text-[13px] font-bold text-primaryDark">
+                <span className="group-open:hidden">주의사항 {d.risks.length - 3}개 더 보기</span>
+                <span className="hidden group-open:inline">접기</span>
+              </summary>
+              <ul className="mt-2.5 flex flex-col gap-2.5">
+                {d.risks.slice(3).map((r, i) => (
+                  <li key={i} className="flex gap-2.5 rounded-xl border border-[#f0dbe6] bg-[#faf1f6] px-3.5 py-3 text-sm">
+                    <span className="font-bold text-bad">•</span>{r}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
       </section>
 
-      {/* 카톡 대화 분석 결과(선택 옵션) */}
-      {d.kakaoAnalysis && (
+      {/* ── ④ 큐핏의 예측 — 행동 뒤 마무리(반증 가능, 재방문 검증) ── */}
+      {d.prediction && !d.needsSupport && (
         <section className="mt-7">
-          <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">카톡 대화 분석</p>
-          <div className="card mt-3.5 whitespace-pre-wrap text-[14px] leading-relaxed">{d.kakaoAnalysis}</div>
+          <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">큐핏의 예측</p>
+          <div className="card mt-3.5 border border-accent/40 bg-accent/5">
+            <p className="text-[15px] leading-relaxed text-ink">{d.prediction}</p>
+            <p className="mt-2.5 text-[12.5px] text-muted">다음에 다시 들르면 “이 예측, 맞았나요?”로 확인해요.</p>
+          </div>
+        </section>
+      )}
+
+      {/* ── ⑤ 판단 근거 (점수 요인) — 부차적 ── */}
+      {factors.length > 0 && (
+        <section className="mt-7">
+          <p className="text-[12.5px] font-bold uppercase tracking-wide text-muted">판단 근거</p>
+          <div className="card mt-3.5">
+            <p className="mb-3 text-[12.5px] leading-relaxed text-muted">점수 계산에 반영된 요인이에요. 당신이 부족하다는 뜻이 아니에요.</p>
+            <ul className="flex flex-col gap-2">
+              {factors.map((f, i) => {
+                const pos = f.delta > 0;
+                return (
+                  <li key={i} className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm"
+                    style={{ background: pos ? "#e4f3f2" : "#f6e6ee" }}>
+                    <span className="text-[12.5px]" style={{ color: pos ? "#4fa3a2" : "#b96b8f" }}>{pos ? "▲" : "▼"}</span>
+                    <span className="flex-1">{f.label}</span>
+                    <span className="text-[13px] font-bold" style={{ color: pos ? "#4fa3a2" : "#b96b8f" }}>
+                      {pos ? "+" : ""}{f.delta}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </section>
       )}
 
