@@ -135,7 +135,7 @@ export async function POST(req: Request) {
     `[사용자가 직접 적은 상황]\n${(answers.freeText || "").trim() || "(없음)"}`,
     `[상대에 대한 설명]\n${(answers.partnerText || "").trim().slice(0, 1000) || "(없음)"}`,
     `[참고(점수 미반영)] 내 MBTI: ${answers.myMbti || "미입력"}, 상대 MBTI: ${answers.partnerMbti || "미입력"}`,
-    prevInsight ? `[직전 진단에서 이미 준 통찰 — 이번엔 같은 말 반복 말고 다른 각도·진전된 다음 스텝을 우선하세요]\n${prevInsight}` : "",
+    prevInsight ? `[직전 진단 회고 — 이번 진단에 참고]\n${prevInsight}\n→ 사용자가 '잘됨/맞음'이라 한 접근은 이어가되('지난번에 ~한 게 잘 통했으니 이번엔…') 그대로 반복하지 말고 진전된 다음 스텝으로, '아쉬움/틀림'이면 접근을 바꾸세요. 통찰은 직전과 다른 각도로. 회고를 반영해 사용자가 '나를 기억한다'고 느끼게 하세요.` : "",
     minor ? `[중요] 사용자는 미성년입니다. 청소년 눈높이로 더 따뜻하고 안전하게.` : "",
     `[규칙 엔진 결과 — 이 결과를 신뢰하고 일관되게 작성]`,
     `- 점수: ${d.score}/100 (${d.scoreTitle})`,

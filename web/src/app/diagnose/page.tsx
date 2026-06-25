@@ -151,14 +151,35 @@ export default function DiagnosePage() {
           if (p.birthYear) setPhase("stage");
         }
 
-        // 재진단 돌림노래 방지 — 직전 진단의 통찰을 넘겨 '다른 각도'를 유도
+        // 재진단 개인화 — 직전 진단의 통찰 + 예측 + 사용자 피드백(예측 적중·그때 결과)을 넘겨
+        // '지난번에 통했던 방법은 이어가고, 안 통한 건 바꾸기' + 다른 각도 유도.
         if (user) {
           try {
             const { data: rows } = await supabase
-              .from("diagnoses").select("result").order("created_at", { ascending: false }).limit(1);
-            const prev = rows?.[0]?.result as { keyInsight?: string; reason?: string } | undefined;
-            const pi = (prev?.keyInsight || prev?.reason || "").trim();
-            if (pi) setPrevInsight(pi.slice(0, 500));
+              .from("diagnoses").select("id, result").order("created_at", { ascending: false }).limit(1);
+            const prevRow = rows?.[0] as { id?: string; result?: { keyInsight?: string; reason?: string; prediction?: string } } | undefined;
+            const pr = prevRow?.result;
+            if (pr) {
+              const lines: string[] = [];
+              const insight = (pr.keyInsight || pr.reason || "").trim();
+              if (insight) lines.push(`직전 통찰: ${insight.slice(0, 300)}`);
+              if (pr.prediction) lines.push(`직전 예측: ${pr.prediction.trim().slice(0, 200)}`);
+              // 사용자 피드백(예측 적중·그때 결과) — diagnosis_outcomes (테이블 미생성 시 조용히 스킵)
+              if (prevRow?.id) {
+                try {
+                  const { data: outs } = await supabase
+                    .from("diagnosis_outcomes").select("kind, value").eq("diagnosis_id", prevRow.id);
+                  const o = (outs ?? []) as { kind: string; value: string }[];
+                  const M: Record<string, string> = { correct: "맞음", partial: "반반", wrong: "틀림", good: "잘됨", soso: "그저그럼", bad: "아쉬움" };
+                  const pred = o.find((x) => x.kind === "prediction")?.value;
+                  const chk = o.find((x) => x.kind === "checkin")?.value;
+                  if (pred || chk) lines.push(`사용자 피드백 — 예측 적중: ${M[pred ?? ""] ?? "미입력"}, 그때 결과: ${M[chk ?? ""] ?? "미입력"}`);
+                } catch {
+                  // 테이블 미생성 — 스킵
+                }
+              }
+              if (lines.length) setPrevInsight(lines.join("\n").slice(0, 700));
+            }
           } catch {
             // 무시
           }
