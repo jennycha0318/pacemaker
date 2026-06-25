@@ -5,8 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// 챗봇 모델: Sonnet 4.6 (빠름·비용 효율). 결과 해석(opus-4-8)과 분리.
-const MODEL = "claude-sonnet-4-6";
+// 챗봇 모델: [실험 2026-06-25] Opus 4.8로 상향(품질·NPS A/B 측정용). 기본/원복값은 Sonnet 4.6(빠름·비용 효율).
+const MODEL = "claude-opus-4-8";
 
 const SYSTEM_PROMPT = `당신은 한국어로 답하는 '큐핏'의 AI 연애 컨설턴트 챗봇입니다. 사용자의 연애 고민과 방금 받은 진단 결과에 대한 후속 질문에 답합니다.
 

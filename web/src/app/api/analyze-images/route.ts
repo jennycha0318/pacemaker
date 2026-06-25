@@ -4,8 +4,8 @@ import Anthropic from "@anthropic-ai/sdk";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// 카톡 대화 캡처 분석(추가 옵션) — 비전. 결과 해석(opus)·챗봇(sonnet)과 별개.
-const MODEL = "claude-sonnet-4-6";
+// 카톡 대화 캡처 분석(추가 옵션) — 비전. [실험 2026-06-25] Opus 4.8로 상향(품질·NPS A/B 측정용). 기본/원복값은 Sonnet 4.6.
+const MODEL = "claude-opus-4-8";
 const MEDIA = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 
 const SYSTEM = `당신은 한국어 'AI 연애 컨설턴트'입니다. 사용자와 상대의 카카오톡 대화 캡처를 보고 상대의 관심도·감정 온도·애착 성향(안정/불안/회피)·연락 패턴 단서를 분석합니다.
