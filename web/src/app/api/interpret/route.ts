@@ -79,6 +79,7 @@ const SYSTEM_PROMPT = `당신은 한국어로 답하는 'AI 연애 컨설턴트'
 - 사용자를 지칭할 때는 사용자 메시지의 '[사용자 호칭]'에 주어진 호칭(예: "민지님이" 또는 "당신이")만 사용하고, '너·네가' 같은 반말 호칭은 절대 쓰지 마세요.
 - 미성년(minor)이면 더 따뜻하고 지지적인 눈높이로, 자극적·선정적 표현 없이. 필요하면 신뢰할 수 있는 어른·상담을 권할 수 있어요.
 - MBTI는 약한 참고일 뿐입니다. 'OO라서 ~하다'처럼 유형을 사실로 단정하거나 성격을 규정하지 마세요. 행동·대화 근거를 우선하고, 굳이 언급한다면 '~한 경향이 있을 수도'처럼 아주 조심스럽게만 하세요.
+- 사용자가 제공하지 않은 사실·대화·메시지를 지어내거나 단정하지 마세요. 주어진 입력(설문·자유서술·상대 설명)에만 근거를 두세요.
 
 [출력]
 - interpretation: 반드시 첫 문장에서 사용자가 지금 느낄 감정을 구체적으로 명명하고 "그럴 만하다"고 정상화하세요(사용자가 직접 적은 표현·단어를 인용한 구체적 공감 — 막연한 일반론 위로 금지). 그다음 문장부터 규칙 결과와 일관되게 상황을 해석하세요(총 3~5문장). 진단명·단정은 금지.
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
   let answers: Answers;
   let minor = false;
   let name = "";
+  let prevInsight = "";
   try {
     const body = await req.json();
     if (!isStage(body?.stage)) {
@@ -101,6 +103,7 @@ export async function POST(req: Request) {
     answers = (body.answers ?? {}) as Answers;
     minor = !!body.minor;
     name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "";
+    prevInsight = typeof body.prevInsight === "string" ? body.prevInsight.slice(0, 500) : "";
   } catch {
     return NextResponse.json({ error: "bad request" }, { status: 400 });
   }
@@ -126,6 +129,7 @@ export async function POST(req: Request) {
     `[사용자가 직접 적은 상황]\n${(answers.freeText || "").trim() || "(없음)"}`,
     `[상대에 대한 설명]\n${(answers.partnerText || "").trim().slice(0, 1000) || "(없음)"}`,
     `[참고(점수 미반영)] 내 MBTI: ${answers.myMbti || "미입력"}, 상대 MBTI: ${answers.partnerMbti || "미입력"}`,
+    prevInsight ? `[직전 진단에서 이미 준 통찰 — 이번엔 같은 말 반복 말고 다른 각도·진전된 다음 스텝을 우선하세요]\n${prevInsight}` : "",
     minor ? `[중요] 사용자는 미성년입니다. 청소년 눈높이로 더 따뜻하고 안전하게.` : "",
     `[규칙 엔진 결과 — 이 결과를 신뢰하고 일관되게 작성]`,
     `- 점수: ${d.score}/100 (${d.scoreTitle})`,
@@ -149,7 +153,7 @@ export async function POST(req: Request) {
         ? `상대가 아니라 ${honorific} 자신에게 건네는 짧은 응원 한마디(1~2줄).`
         : `지금은 연락 대신 마음을 추스를 때예요. 상대가 아니라 ${honorific} 자신에게 건네는 따뜻한 위로·다짐 한마디(2~3줄)를 쓰세요. 연락하고 싶은 충동을 비난하지 말고 "자연스러운 마음"이라고 정상화한 뒤, 오늘 나를 돌보는 쪽으로 부드럽게 이끌어 주세요. 규칙 결과(보류·차단 등)와 일관되게, 단정·진단 표현 없이.`
     }`,
-    `4) keyInsight: freeText·'상대에 대한 설명'·설문 응답을 종합해, 사용자가 스스로 말했지만 의미를 연결 짓지는 못했을 패턴 1개를 짚으세요(예: "먼저 연락을 줄일까 고민하면서도 매번 먼저 연락하는 건, ~일 수 있어요"). 뻔한 조언·일반론 금지, 구체 근거 인용. 없으면 빈 문자열.`,
+    `4) keyInsight: freeText·'상대에 대한 설명'·설문 응답을 종합해, 사용자가 스스로 말했지만 의미를 연결 짓지는 못했을 패턴 1개를 짚으세요(예: "먼저 연락을 줄일까 고민하면서도 매번 먼저 연락하는 건, ~일 수 있어요"). 뻔한 조언·일반론 금지, 구체 근거 인용. 없으면 빈 문자열. 직전 진단 통찰이 주어졌다면 그와 겹치지 않는 새로운 각도로.`,
   ]
     .filter(Boolean)
     .join("\n");

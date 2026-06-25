@@ -84,6 +84,7 @@ export default function DiagnosePage() {
   const [myBirthYear, setMyBirthYear] = useState("");
   const [myMbti, setMyMbti] = useState("");
   const [myName, setMyName] = useState(""); // 로그인 사용자 닉네임(결과 호칭용)
+  const [prevInsight, setPrevInsight] = useState(""); // 직전 진단 통찰(재진단 시 다른 각도 유도)
   const [stage, setStage] = useState<Stage>("crush");
   const [partnerBirthYear, setPartnerBirthYear] = useState("");
   const [partnerMbti, setPartnerMbti] = useState("");
@@ -148,6 +149,19 @@ export default function DiagnosePage() {
           if (p.mbti) setMyMbti(p.mbti);
           setMyName(p.nickname || p.name || ""); // 활동 호칭: 닉네임 우선, 없으면 로그인 이름
           if (p.birthYear) setPhase("stage");
+        }
+
+        // 재진단 돌림노래 방지 — 직전 진단의 통찰을 넘겨 '다른 각도'를 유도
+        if (user) {
+          try {
+            const { data: rows } = await supabase
+              .from("diagnoses").select("result").order("created_at", { ascending: false }).limit(1);
+            const prev = rows?.[0]?.result as { keyInsight?: string; reason?: string } | undefined;
+            const pi = (prev?.keyInsight || prev?.reason || "").trim();
+            if (pi) setPrevInsight(pi.slice(0, 500));
+          } catch {
+            // 무시
+          }
         }
       } catch {
         // 비로그인/오류 — 기본 'me' 단계 유지
@@ -257,7 +271,7 @@ export default function DiagnosePage() {
         fetch("/api/interpret", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stage: s, answers: merged, minor, name: myName || undefined }),
+          body: JSON.stringify({ stage: s, answers: merged, minor, name: myName || undefined, prevInsight: prevInsight || undefined }),
           signal: ctrl.signal,
         }).catch(() => null),
         imagesPayload && imagesPayload.length
