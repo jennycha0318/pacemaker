@@ -36,11 +36,17 @@ create table if not exists public.profiles (
   mbti text,                           -- 4글자 MBTI 또는 null(비공개/모름)
   attachment text,                     -- secure | anxious | avoidant | null
   nickname text,                       -- 활동 닉네임(편집 가능). 로그인 이름은 auth.users에 보관.
+  partner_birth_year int,              -- 마지막 입력 상대 정보(다음 진단 자동 채움). 카톡 캡처는 저장 안 함.
+  partner_mbti text,
+  partner_note text,
   updated_at timestamptz not null default now()
 );
 
--- 기존 profiles 테이블에 닉네임 컬럼이 없으면 추가(메타데이터→테이블로 이전해 영속화)
+-- 기존 profiles 테이블에 컬럼이 없으면 추가(메타데이터→테이블로 이전해 영속화)
 alter table public.profiles add column if not exists nickname text;
+alter table public.profiles add column if not exists partner_birth_year int;
+alter table public.profiles add column if not exists partner_mbti text;
+alter table public.profiles add column if not exists partner_note text;
 
 alter table public.profiles enable row level security;
 

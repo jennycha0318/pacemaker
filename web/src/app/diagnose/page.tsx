@@ -89,6 +89,9 @@ export default function DiagnosePage() {
   const [partnerBirthYear, setPartnerBirthYear] = useState("");
   const [partnerMbti, setPartnerMbti] = useState("");
   const [partnerNote, setPartnerNote] = useState(""); // 상대 자유서술(AI가 성향 추출)
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [prefilledFromSaved, setPrefilledFromSaved] = useState(false); // 상대 정보가 지난번 저장본으로 채워졌나
+  const savedPartnerRef = useRef({ birthYear: "", mbti: "", note: "" }); // 다음 진단 자동 채움용
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [free, setFree] = useState("");
@@ -111,6 +114,7 @@ export default function DiagnosePage() {
         const supabase = createClient();
         const { data } = await supabase.auth.getUser();
         const user = data?.user ?? null;
+        setLoggedIn(!!user);
 
         // ── 게스트 결과 복원(로그인 상태에서만) ──
         if (user) {
@@ -148,6 +152,15 @@ export default function DiagnosePage() {
           if (p.birthYear) { setMyBirthYear(String(p.birthYear)); setHasProfileBirth(true); }
           if (p.mbti) setMyMbti(p.mbti);
           setMyName(p.nickname || p.name || ""); // 활동 호칭: 닉네임 우선, 없으면 로그인 이름
+          // 마지막 상대 정보 자동 채움(있으면) — 다른 사람이면 상대 화면에서 지우기 가능
+          if (p.partnerBirthYear || p.partnerMbti || p.partnerNote) {
+            const pb = p.partnerBirthYear ? String(p.partnerBirthYear) : "";
+            const pm = p.partnerMbti ?? "";
+            const pn = p.partnerNote ?? "";
+            setPartnerBirthYear(pb); setPartnerMbti(pm); setPartnerNote(pn);
+            savedPartnerRef.current = { birthYear: pb, mbti: pm, note: pn };
+            setPrefilledFromSaved(true);
+          }
           if (p.birthYear) setPhase("stage");
         }
 
@@ -356,13 +369,35 @@ export default function DiagnosePage() {
 
   function pickStage(s: Stage) {
     setStage(s); setAnswers({}); setQIndex(0); setFree(""); setKakaoFiles([]);
-    setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote("");
+    const sp = savedPartnerRef.current; // 저장된 상대 정보 자동 채움(없으면 빈 값)
+    setPartnerBirthYear(sp.birthYear); setPartnerMbti(sp.mbti); setPartnerNote(sp.note);
+    setPrefilledFromSaved(!!(sp.birthYear || sp.mbti || sp.note));
     setPhase("partner");
   }
 
   function reset() {
     setPhase("stage"); setAnswers({}); setQIndex(0); setResult(null);
-    setFree(""); setKakaoFiles([]); setSaveStatus("idle"); setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setSavedId(null);
+    const sp = savedPartnerRef.current;
+    setFree(""); setKakaoFiles([]); setSaveStatus("idle");
+    setPartnerBirthYear(sp.birthYear); setPartnerMbti(sp.mbti); setPartnerNote(sp.note);
+    setPrefilledFromSaved(!!(sp.birthYear || sp.mbti || sp.note));
+    setSavedId(null);
+  }
+
+  // 로그인 사용자의 마지막 상대 정보 저장(다음 진단 자동 채움) — 베스트에포트. 카톡 캡처는 저장 안 함.
+  async function savePartner() {
+    if (!loggedIn) return;
+    try {
+      const supabase = createClient();
+      await saveProfile(supabase, {
+        partnerBirthYear: partnerBirthYear ? Number(partnerBirthYear) : null,
+        partnerMbti: partnerMbti || null,
+        partnerNote: partnerNote.trim() || null,
+      });
+      savedPartnerRef.current = { birthYear: partnerBirthYear, mbti: partnerMbti, note: partnerNote };
+    } catch {
+      // 저장 실패해도 진단은 진행
+    }
   }
 
   // ── 프로필 로딩 중 ──
@@ -421,6 +456,19 @@ export default function DiagnosePage() {
         <button onClick={() => setPhase("stage")} className={BACK_BTN}>← 상황</button>
         <h2 className="mb-6 mt-3 text-[26px] font-bold tracking-tight">상대에 대해 아는 게 있나요?</h2>
 
+        {prefilledFromSaved && (
+          <div className="mb-5 flex items-center justify-between gap-2 rounded-xl bg-primarySoft px-3.5 py-2.5 text-[12.5px]">
+            <span className="text-primaryDark">지난번 상대 정보예요. 같은 사람이면 그대로 두세요.</span>
+            <button
+              type="button"
+              onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setKakaoFiles([]); setPrefilledFromSaved(false); }}
+              className="shrink-0 rounded-full bg-white/70 px-3 py-1 font-bold text-primaryDark transition active:scale-95 hover:bg-white"
+            >
+              다른 사람이면 지우기
+            </button>
+          </div>
+        )}
+
         <label className="mb-1.5 block text-[13px] font-bold">상대 출생연도 <span className="font-normal text-muted">(선택)</span></label>
         <div className="mb-4"><YearSelect value={partnerBirthYear} onChange={setPartnerBirthYear} ariaLabel="상대 출생연도" /></div>
 
@@ -468,8 +516,8 @@ export default function DiagnosePage() {
         )}
         <div className="mb-5" />
 
-        <button className="btn btn-primary" onClick={() => setPhase("survey")}>다음</button>
-        <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setKakaoFiles([]); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
+        <button className="btn btn-primary" onClick={() => { savePartner(); setPhase("survey"); }}>다음</button>
+        <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setKakaoFiles([]); setPrefilledFromSaved(false); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
       </div>
     );
   }
