@@ -539,7 +539,16 @@ export default function DiagnosePage() {
           {q.desc && <p className="-mt-4 mb-3.5 text-sm text-muted">{q.desc}</p>}
           <textarea className="field-input min-h-[140px] resize-y leading-relaxed" placeholder={q.placeholder}
             aria-label={q.title} value={free} onChange={(e) => setFree(e.target.value)} />
-          <button className="btn btn-primary mt-3.5" onClick={() => setQIndex(qIndex + 1)}>다음</button>
+          {free.trim().length < 10 && (
+            <p className="mt-2 text-[12.5px] text-muted">정확한 분석을 위해 상황을 한두 문장 이상 적어주세요.</p>
+          )}
+          <button
+            className="btn btn-primary mt-3.5 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setQIndex(qIndex + 1)}
+            disabled={free.trim().length < 10}
+          >
+            다음
+          </button>
         </div>
       ) : (
         <div>

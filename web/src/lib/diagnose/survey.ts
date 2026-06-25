@@ -44,8 +44,8 @@ const SELF_URGENCY_Q: Question = {
 const FREE_TEXT_Q: Question = {
   id: "freeText",
   type: "text",
-  title: "상황을 자유롭게 적어주세요",
-  desc: "자세히 적을수록 더 정확한 분석이 가능해요. (선택)",
+  title: "지금 어떤 상황인지 적어주세요",
+  desc: "정확한 분석을 위해 꼭 필요해요. 자세히 적을수록 더 정확해집니다.",
   placeholder: "예) 일이 바빠서 소홀했고, 마지막에 크게 싸우고 헤어졌어요…",
 };
 const ABUSE_Q: Question = {
