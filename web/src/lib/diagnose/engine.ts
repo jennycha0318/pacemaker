@@ -27,6 +27,12 @@ export interface Diagnosis {
   minor?: boolean; // 미성년(10대) → 청소년 눈높이 톤 + 지지 강화
   compat?: Compat; // 성향·궁합 참고 레이어(MBTI·나이차) — 점수 미반영
   kakaoAnalysis?: string; // 카톡 캡처 분석 결과(선택 옵션) — 점수 미반영
+  // --- 학습/측정 계측(점수 미반영) — result jsonb에 저장돼 후속 집계·개선에 사용 ---
+  factorSignature?: string; // 유사 상황 그룹핑 키(factors label 해시) — '어떤 패턴에 무슨 조언이 맞았나' 집계용
+  ruleVersion?: string;     // 규칙 엔진 버전 스탬프(소급 불가 → 생성 시점에 기록)
+  predictionType?: string;  // 예측 유형(enum) — 적중률 집계용. interpret가 채움
+  modelVersion?: string;    // 해석 생성 모델. interpret가 채움
+  promptVersion?: string;   // 해석 프롬프트 버전. interpret가 채움
 }
 
 type Map = Record<string, [number, string]>;
@@ -36,6 +42,18 @@ function addMap(f: Factor[], map: Map, key: string) {
 }
 const sum = (f: Factor[]) => f.reduce((t, x) => t + x.delta, 0);
 const clamp = (n: number) => Math.max(3, Math.min(97, Math.round(n)));
+
+// 규칙 엔진 버전 — 프롬프트/규칙을 바꾸면 갱신(개선 전후 비교·회귀 추적의 전제).
+export const RULE_VERSION = "2026-06-26";
+
+// factors(상황 패턴)를 정렬·해시한 짧은 서명 — 비슷한 상황을 그룹핑해 '무슨 조언이 실제로 맞았나' 집계용.
+// 클라이언트·서버 공용이라 Node crypto 대신 순수 JS 해시(djb2) 사용.
+function factorSig(factors: Factor[]): string {
+  const key = factors.filter((x) => x.delta !== 0).map((x) => x.label).sort().join("|");
+  let h = 5381;
+  for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
 
 // 학대(통제·위협·폭력) 신고 시 — 점수 엔진을 우회하고 안전 우선 결과를 즉시 반환.
 // plan 포함해 완성형으로 만들어, diagnose() 래퍼의 makePlan/computePersonality 덮어쓰기를 피한다.
@@ -81,6 +99,8 @@ export function diagnose(stage: Stage, a: Answers): Diagnosis {
   else res = diagnoseBreakup(a);
   res.plan = makePlan(stage, res.score, a);
   res.compat = computePersonality(a); // 참고 레이어 (점수엔 미반영)
+  res.ruleVersion = RULE_VERSION;
+  res.factorSignature = factorSig(res.factors);
   return res;
 }
 

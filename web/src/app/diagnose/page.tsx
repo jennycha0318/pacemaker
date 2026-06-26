@@ -168,30 +168,50 @@ export default function DiagnosePage() {
         // '지난번에 통했던 방법은 이어가고, 안 통한 건 바꾸기' + 다른 각도 유도.
         if (user) {
           try {
+            // 재진단 개인화 — 최근 5건 진단 이력 + 예측 적중 흐름을 누적 회고로 주입.
+            // '나를 기억한다'(직전 1건)를 '나에 대해 학습한다'(누적 이력+적중률)로 격상.
             const { data: rows } = await supabase
-              .from("diagnoses").select("id, result").order("created_at", { ascending: false }).limit(1);
-            const prevRow = rows?.[0] as { id?: string; result?: { keyInsight?: string; reason?: string; prediction?: string } } | undefined;
-            const pr = prevRow?.result;
-            if (pr) {
-              const lines: string[] = [];
-              const insight = (pr.keyInsight || pr.reason || "").trim();
-              if (insight) lines.push(`직전 통찰: ${insight.slice(0, 300)}`);
-              if (pr.prediction) lines.push(`직전 예측: ${pr.prediction.trim().slice(0, 200)}`);
-              // 사용자 피드백(예측 적중·그때 결과) — diagnosis_outcomes (테이블 미생성 시 조용히 스킵)
-              if (prevRow?.id) {
-                try {
-                  const { data: outs } = await supabase
-                    .from("diagnosis_outcomes").select("kind, value").eq("diagnosis_id", prevRow.id);
-                  const o = (outs ?? []) as { kind: string; value: string }[];
-                  const M: Record<string, string> = { correct: "맞음", partial: "반반", wrong: "틀림", good: "잘됨", soso: "그저그럼", bad: "아쉬움" };
-                  const pred = o.find((x) => x.kind === "prediction")?.value;
-                  const chk = o.find((x) => x.kind === "checkin")?.value;
-                  if (pred || chk) lines.push(`사용자 피드백 — 예측 적중: ${M[pred ?? ""] ?? "미입력"}, 그때 결과: ${M[chk ?? ""] ?? "미입력"}`);
-                } catch {
-                  // 테이블 미생성 — 스킵
+              .from("diagnoses").select("id, result, created_at").order("created_at", { ascending: false }).limit(5);
+            const list = (rows ?? []) as { id: string; result?: { keyInsight?: string; reason?: string; prediction?: string } }[];
+            if (list.length) {
+              const M: Record<string, string> = { correct: "맞음", partial: "반반", wrong: "틀림", good: "잘됨", soso: "그저그럼", bad: "아쉬움" };
+              // 최근 진단들의 예측 적중·체크인 일괄 조회(테이블 미생성 시 조용히 스킵)
+              const fb: Record<string, { pred?: string; chk?: string }> = {};
+              try {
+                const { data: outs } = await supabase
+                  .from("diagnosis_outcomes").select("diagnosis_id, kind, value").in("diagnosis_id", list.map((r) => r.id));
+                for (const o of (outs ?? []) as { diagnosis_id: string; kind: string; value: string }[]) {
+                  fb[o.diagnosis_id] = fb[o.diagnosis_id] || {};
+                  if (o.kind === "prediction") fb[o.diagnosis_id].pred = o.value;
+                  if (o.kind === "checkin") fb[o.diagnosis_id].chk = o.value;
                 }
+              } catch {
+                // 테이블 미생성 — 스킵
               }
-              if (lines.length) setPrevInsight(lines.join("\n").slice(0, 700));
+              const lines: string[] = [];
+              // 1) 직전 진단 — 상세
+              const recent = list[0];
+              const rIns = (recent.result?.keyInsight || recent.result?.reason || "").trim();
+              if (rIns) lines.push(`직전 통찰: ${rIns.slice(0, 300)}`);
+              if (recent.result?.prediction) lines.push(`직전 예측: ${recent.result.prediction.trim().slice(0, 200)}`);
+              const rf = fb[recent.id];
+              if (rf?.pred || rf?.chk) lines.push(`직전 피드백 — 예측 적중: ${M[rf?.pred ?? ""] ?? "미입력"}, 그때 결과: ${M[rf?.chk ?? ""] ?? "미입력"}`);
+              // 2) 그 이전 이력 — 압축 요약
+              if (list.length > 1) {
+                const hist = list.slice(1).map((r, i) => {
+                  const f = fb[r.id];
+                  const pr = (r.result?.prediction || "").trim();
+                  return `${i + 2}회 전[예측 ${M[f?.pred ?? ""] ?? "미확인"}]${pr ? `: ${pr.slice(0, 40)}` : ""}`;
+                }).join(" / ");
+                lines.push(`이전 이력: ${hist}`);
+              }
+              // 3) 누적 예측 적중률 — '학습'의 신호(빗나간 흐름이면 접근 전환 유도)
+              const preds = list.map((r) => fb[r.id]?.pred).filter(Boolean) as string[];
+              if (preds.length) {
+                const correct = preds.filter((p) => p === "correct").length;
+                lines.push(`누적 예측 적중: ${preds.length}건 중 ${correct}건 맞음 — 빗나간 흐름이 있으면 접근을 바꾸고, 맞은 흐름은 이어가세요.`);
+              }
+              if (lines.length) setPrevInsight(lines.join("\n").slice(0, 1000));
             }
           } catch {
             // 무시
@@ -319,12 +339,16 @@ export default function DiagnosePage() {
       ]);
 
       if (interpretRes && interpretRes.ok) {
-        const data = (await interpretRes.json()) as { interpretation?: string; message?: string; selfMessage?: string; keyInsight?: string; prediction?: string };
+        const data = (await interpretRes.json()) as { interpretation?: string; message?: string; selfMessage?: string; keyInsight?: string; prediction?: string; predictionType?: string; modelVersion?: string; promptVersion?: string };
         if (data.interpretation) next.reason = data.interpretation;
         if (!d.hold && data.message) next.msg = data.message;
         if (d.hold && data.selfMessage) next.selfMessage = data.selfMessage;
         if (data.keyInsight) next.keyInsight = data.keyInsight;
         if (data.prediction) next.prediction = data.prediction;
+        // 학습/측정 계측 — result jsonb에 함께 저장(적중률·버전 비교용)
+        if (data.predictionType) next.predictionType = data.predictionType;
+        if (data.modelVersion) next.modelVersion = data.modelVersion;
+        if (data.promptVersion) next.promptVersion = data.promptVersion;
       }
       if (imgRes && imgRes.ok) {
         const data = (await imgRes.json()) as { analysis?: string };

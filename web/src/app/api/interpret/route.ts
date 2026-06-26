@@ -9,6 +9,8 @@ export const dynamic = "force-dynamic";
 
 // 모델: 결과 해석은 Opus 4.8(고품질). 챗봇(추후)은 별도로 Sonnet 4.6 사용 예정.
 const MODEL = "claude-opus-4-8";
+// 해석 프롬프트 버전 — 프롬프트를 바꾸면 갱신(개선 전후 적중률·만족도 비교의 전제). result에 스탬프됨.
+const PROMPT_VERSION = "2026-06-26";
 
 // 구조화 출력 스키마 — 해석(interpretation)과 문구(message)만. 점수·타이밍은 규칙 엔진이 확정.
 const OUTPUT_SCHEMA = {
@@ -34,8 +36,14 @@ const OUTPUT_SCHEMA = {
       type: "string",
       description: "향후 1~2주 내 사용자가 직접 관찰·반증할 수 있는 구체적 예측 1개(1~2문장). 예: '먼저 연락을 2~3일 줄이면 이 사람이 먼저 연락해 올 가능성이 높아요.' 막연한 '잘 될 거예요' 금지. 마땅하지 않으면 빈 문자열.",
     },
+    predictionType: {
+      type: "string",
+      enum: ["partner_initiates", "reply_warms", "meetup", "space_works", "feelings_settle", "cools_off", "no_change", "none"],
+      description:
+        "위 prediction을 한 유형으로 분류(적중률 집계용): partner_initiates(상대가 먼저 연락·접근), reply_warms(답장 속도·온도 상승), meetup(만남 성사), space_works(거리두기·자제가 효과), feelings_settle(내 감정 정리·진전), cools_off(관계 식음·악화), no_change(변화 없음), none(예측 없음). prediction이 빈 문자열이면 none.",
+    },
   },
-  required: ["interpretation", "message", "selfMessage", "keyInsight", "prediction"],
+  required: ["interpretation", "message", "selfMessage", "keyInsight", "prediction", "predictionType"],
   additionalProperties: false,
 } as const;
 
@@ -52,6 +60,9 @@ function fallback(d: Diagnosis) {
     selfMessage: d.selfMessage ?? "",
     keyInsight: "",
     prediction: "",
+    predictionType: "none",
+    modelVersion: "fallback",
+    promptVersion: PROMPT_VERSION,
   });
 }
 
@@ -186,7 +197,7 @@ export async function POST(req: Request) {
     const textBlock = resp.content.find((b) => b.type === "text");
     if (!textBlock || textBlock.type !== "text") return fallback(d);
 
-    let parsed: { interpretation?: string; message?: string; selfMessage?: string; keyInsight?: string; prediction?: string };
+    let parsed: { interpretation?: string; message?: string; selfMessage?: string; keyInsight?: string; prediction?: string; predictionType?: string };
     try {
       parsed = JSON.parse(textBlock.text);
     } catch {
@@ -198,7 +209,8 @@ export async function POST(req: Request) {
     const selfMessage = (parsed.selfMessage || "").trim() || d.selfMessage || "";
     const keyInsight = (parsed.keyInsight || "").trim();
     const prediction = (parsed.prediction || "").trim();
-    return NextResponse.json({ source: "ai" as const, interpretation, message, selfMessage, keyInsight, prediction });
+    const predictionType = prediction ? (parsed.predictionType || "none") : "none";
+    return NextResponse.json({ source: "ai" as const, interpretation, message, selfMessage, keyInsight, prediction, predictionType, modelVersion: MODEL, promptVersion: PROMPT_VERSION });
   } catch {
     // 호출 실패(네트워크·인증·과금 등) → 규칙 결과로 폴백
     return fallback(d);
