@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { GoogleButton } from "@/components/GoogleButton";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
 import { saveProfile } from "@/lib/profile";
+import { markConsentPending } from "@/lib/consent";
 import { BrandLockup } from "@/components/Logo";
 import { PwToggle } from "@/components/PwToggle";
 
@@ -21,6 +22,7 @@ export default function SignupPage() {
   const [ok, setOk] = useState("");
   const [loading, setLoading] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [agreeSensitive, setAgreeSensitive] = useState(false);
   const [birthYear, setBirthYear] = useState("");
   const [mbti, setMbti] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -34,7 +36,8 @@ export default function SignupPage() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("올바른 이메일을 입력해 주세요.");
     if (pw.length < 6) return setErr("비밀번호는 6자 이상이어야 해요.");
     if (!birthYear) return setErr("출생연도를 선택해 주세요.");
-    if (!agree) return setErr("개인정보 수집·이용에 동의해 주세요.");
+    if (!agree || !agreeSensitive) return setErr("개인정보 수집·이용과 민감정보 분석 활용에 모두 동의해 주세요.");
+    markConsentPending();
     setLoading(true);
     try {
       const supabase = createClient();
@@ -71,14 +74,20 @@ export default function SignupPage() {
       <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">회원가입</h2>
       <p className="mb-6 text-sm text-muted">이메일로 가입하거나 Google을 사용하세요.</p>
 
-      <GoogleButton hasConsent={agree} onNeedConsent={() => setErr("개인정보 수집·이용 및 데이터 활용에 동의해 주세요.")} />
+      <GoogleButton hasConsent={agree && agreeSensitive} onNeedConsent={() => setErr("개인정보 수집·이용과 민감정보 분석 활용에 모두 동의해 주세요.")} onProceed={markConsentPending} />
       <p className="mt-1.5 text-center text-[12.5px] text-muted">Google로 가입 시 계정 이름이 닉네임으로 저장돼요.</p>
 
-      <label className="mb-1 mt-3.5 flex items-start gap-2 text-[13px] text-muted">
+      <label className="mb-1.5 mt-3.5 flex items-start gap-2 text-[13px] text-muted">
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
         <span>
-          <Link href="/privacy" target="_blank" className="font-bold text-primaryDark underline">개인정보 수집·이용 및 데이터 활용</Link>에 동의합니다.
-          이메일·닉네임·출생연도·진단 입력(자유서술 포함)·채팅 상담 내용이 저장되고, 서비스 개선과 AI 분석에 활용돼요. 언제든 열람·삭제할 수 있어요.
+          <span className="font-bold text-foreground">[필수]</span> <Link href="/privacy" target="_blank" className="font-bold text-primaryDark underline">개인정보 수집·이용 및 데이터 활용</Link>에 동의합니다.
+          이메일·닉네임·출생연도·진단 입력·채팅 상담 내용이 저장되고, 서비스 개선과 AI 분석에 활용돼요. 언제든 열람·삭제할 수 있어요.
+        </span>
+      </label>
+      <label className="mb-1 flex items-start gap-2 text-[13px] text-muted">
+        <input type="checkbox" checked={agreeSensitive} onChange={(e) => setAgreeSensitive(e.target.checked)} className="mt-0.5" />
+        <span>
+          <span className="font-bold text-foreground">[필수]</span> 연애·관계 상황 등 <b className="font-bold">민감할 수 있는 정보</b>를 진단·상담 분석에 활용하는 데 동의합니다.
         </span>
       </label>
 

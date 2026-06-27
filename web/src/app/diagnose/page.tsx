@@ -9,6 +9,7 @@ import { Report } from "@/components/Report";
 import { fileToResized } from "@/lib/image";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
 import { getProfile, saveProfile } from "@/lib/profile";
+import { flushConsent } from "@/lib/consent";
 import { Logo } from "@/components/Logo";
 
 const STAGES: { v: Stage; name: string; note: string }[] = [
@@ -167,6 +168,7 @@ export default function DiagnosePage() {
         // 재진단 개인화 — 직전 진단의 통찰 + 예측 + 사용자 피드백(예측 적중·그때 결과)을 넘겨
         // '지난번에 통했던 방법은 이어가고, 안 통한 건 바꾸기' + 다른 각도 유도.
         if (user) {
+          void flushConsent(supabase, user.id); // 가입/로그인 시 보류된 데이터 활용 동의를 영속 기록(증빙)
           try {
             // 재진단 개인화 — 최근 5건 진단 이력 + 예측 적중 흐름을 누적 회고로 주입.
             // '나를 기억한다'(직전 1건)를 '나에 대해 학습한다'(누적 이력+적중률)로 격상.

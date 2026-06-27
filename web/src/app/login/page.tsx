@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { GoogleButton } from "@/components/GoogleButton";
+import { markConsentPending } from "@/lib/consent";
 import { BrandLockup } from "@/components/Logo";
 import { PwToggle } from "@/components/PwToggle";
 
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [agree, setAgree] = useState(false);
 
   const emailHint = email && !EMAIL_RE.test(email) ? "이메일 형식을 확인해 주세요. (예: you@example.com)" : "";
 
@@ -48,10 +50,13 @@ export default function LoginPage() {
       <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">로그인</h2>
       <p className="mb-6 text-sm text-muted">큐핏에 오신 걸 환영해요.</p>
 
-      <GoogleButton />
-      <p className="mt-1.5 text-center text-[12px] text-muted">
-        계속 진행하면 <Link href="/privacy" target="_blank" className="underline">개인정보 처리방침·데이터 활용</Link>에 동의하는 것으로 간주돼요.
-      </p>
+      <GoogleButton hasConsent={agree} onNeedConsent={() => setErr("개인정보 수집·이용 및 민감정보 분석 활용에 동의해 주세요.")} onProceed={markConsentPending} />
+      <label className="mb-1 mt-2.5 flex items-start gap-2 text-[12.5px] text-muted">
+        <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
+        <span>
+          (신규 가입 시) <Link href="/privacy" target="_blank" className="font-bold text-primaryDark underline">개인정보 수집·이용 및 민감정보(연애 상황) 분석 활용</Link>에 동의합니다. 기존 회원은 체크 없이 아래로 로그인하세요.
+        </span>
+      </label>
       <div className="my-[18px] flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line">
         <span>또는 이메일로</span>
       </div>

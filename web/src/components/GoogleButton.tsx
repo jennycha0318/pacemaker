@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export function GoogleButton({ hasConsent = true, onNeedConsent }: { hasConsent?: boolean; onNeedConsent?: () => void } = {}) {
+export function GoogleButton({ hasConsent = true, onNeedConsent, onProceed }: { hasConsent?: boolean; onNeedConsent?: () => void; onProceed?: () => void } = {}) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
@@ -12,6 +12,7 @@ export function GoogleButton({ hasConsent = true, onNeedConsent }: { hasConsent?
       onNeedConsent?.();
       return;
     }
+    onProceed?.(); // 동의 시각 기록(리다이렉트 전)
     setErr("");
     setLoading(true);
     try {

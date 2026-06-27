@@ -47,6 +47,9 @@ alter table public.profiles add column if not exists nickname text;
 alter table public.profiles add column if not exists partner_birth_year int;
 alter table public.profiles add column if not exists partner_mbti text;
 alter table public.profiles add column if not exists partner_note text;
+-- 데이터 활용 동의 기록(증빙): 동의 시각 + 민감정보 분석 활용 동의 여부
+alter table public.profiles add column if not exists data_consent_at timestamptz;
+alter table public.profiles add column if not exists data_consent_sensitive boolean;
 
 alter table public.profiles enable row level security;
 
