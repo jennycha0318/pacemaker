@@ -1,4 +1,4 @@
--- Pacemaker Supabase 스키마
+-- 큐핏 Supabase 스키마
 -- Supabase 대시보드 → SQL Editor 에 붙여넣고 실행하세요.
 
 -- 진단 결과 (사용자별)

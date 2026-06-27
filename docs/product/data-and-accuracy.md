@@ -69,7 +69,7 @@ expert_cases  (신규, 오프라인 시드) 익명 사례 + 결과 라벨 → ev
 3. 좋은/나쁜 연락 문구 예시 코퍼스 (메시지 품질)
 → 주면 내가: 가중치 보정 · eval 셋 · 프롬프트/규칙 개선까지 처리.
 
-> 📄 **전달 양식**: [`docs/templates/pacemaker-data-template.xlsx`](../templates/pacemaker-data-template.xlsx)
+> 📄 **전달 양식**: [`docs/templates/qpit-data-template.xlsx`](../templates/qpit-data-template.xlsx)
 > (시트: 상담사례+결과 / 상담사 결정규칙 / 연락문구 예시 + 작성안내·드롭다운·예시행)
 
 ## 5. 주의 (함정)

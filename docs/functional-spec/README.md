@@ -1,6 +1,6 @@
 # Functional Spec
 
-Pacemaker 웹앱의 기능 명세. 페이지별 spec + 전체 flow.
+큐핏 웹앱의 기능 명세. 페이지별 spec + 전체 flow.
 구현체: `web/` (Next.js 15 App Router). Prod: `https://qpit.vercel.app`
 
 ## 문서 구성

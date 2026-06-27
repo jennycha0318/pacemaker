@@ -26,3 +26,9 @@ Thumbs.db
 
 # Claude
 .claude/
+
+# gstack tooling
+.gstack/
+
+# 참고자료 PDF(저작권 원문) — 커밋 금지
+*.pdf

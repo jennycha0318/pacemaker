@@ -1,5 +1,5 @@
 /* ============================================================
-   Pacemaker Prototype — 플로우 로직 + Mock 진단 엔진 (v2)
+   큐핏 Prototype — 플로우 로직 + Mock 진단 엔진 (v2)
    ※ 실제 AI 호출 대신 연애·재회 상담 프레임워크를 흉내 낸
      "요인(factor) 기반 규칙 엔진"으로 진단을 생성한다.
      각 답변이 점수에 기여한 근거를 그대로 노출해 신뢰를 준다.
@@ -705,7 +705,7 @@ async function shareResult() {
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#2a2438"; ctx.font = '700 52px Pretendard, "Noto Sans KR", sans-serif';
-  ctx.fillText("Pacemaker", W / 2, 280);
+  ctx.fillText("큐핏", W / 2, 280);
   ctx.fillStyle = "#8a8398"; ctx.font = '500 30px Pretendard, "Noto Sans KR", sans-serif';
   ctx.fillText("AI 연애 컨설팅", W / 2, 330);
 
@@ -736,13 +736,13 @@ async function shareResult() {
   ctx.fillText("내 연애 타이밍, 지금 진단받기", cx, 1160);
 
   const finish = (blob) => {
-    const file = new File([blob], "pacemaker-result.png", { type: "image/png" });
+    const file = new File([blob], "qpit-result.png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      navigator.share({ files: [file], title: "Pacemaker 진단 결과", text: "내 연애 타이밍 진단 결과" }).catch(() => {});
+      navigator.share({ files: [file], title: "큐핏 진단 결과", text: "내 연애 타이밍 진단 결과" }).catch(() => {});
     } else {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url; a.download = "pacemaker-result.png"; a.click();
+      a.href = url; a.download = "qpit-result.png"; a.click();
       URL.revokeObjectURL(url);
     }
   };
@@ -753,8 +753,8 @@ async function shareResult() {
 // ※ 데모용 로컬 인증입니다. 실제 서비스는 Supabase Auth 또는
 //   NextAuth(Google 포함) + 서버 DB로 구현합니다.
 //   (docs/product/auth-and-history.md)
-const LS_USERS = "pacemaker_users";
-const LS_SESSION = "pacemaker_session";
+const LS_USERS = "qpit_users";
+const LS_SESSION = "qpit_session";
 let currentUser = null;
 
 function lsGet(k, fb) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? fb : v; } catch (e) { return fb; } }
@@ -828,7 +828,7 @@ function goHome() {
 
 // ══════════════ 진단 히스토리 ══════════════
 const STAGE_LABEL = { crush: "썸", dating: "연애 중", breakup: "이별 후" };
-function histKey() { return "pacemaker_history_" + (currentUser ? currentUser.email : "guest"); }
+function histKey() { return "qpit_history_" + (currentUser ? currentUser.email : "guest"); }
 function loadHistory() { return lsGet(histKey(), []); }
 function saveDiagnosisToHistory(d) {
   if (!currentUser) return;

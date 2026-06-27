@@ -1,4 +1,4 @@
-# Pacemaker
+# 큐핏
 
 > AI 기반 연애·재회 의사결정 컨설팅 서비스
 
@@ -39,10 +39,10 @@
 ```
 docs/        기획·기능명세·백엔드·디자인 문서
 prototype/   초기 HTML 프로토타입 (탐색용, 디자인은 web/ 와 별개)
-pacemaker.html  프로토타입 단일 파일 데모(다운로드용)
+qpit.html  프로토타입 단일 파일 데모(다운로드용)
 web/         실제 제품 (Next.js + Supabase)
 ```
-> 참고: `prototype/`(및 `pacemaker.html`)는 초기 탐색용이라 최신 web/ 앱과 디자인·기능이 다릅니다. 최신 제품은 `web/` 입니다.
+> 참고: `prototype/`(및 `qpit.html`)는 초기 탐색용이라 최신 web/ 앱과 디자인·기능이 다릅니다. 최신 제품은 `web/` 입니다.
 
 ## 개발 로드맵
 1. ✅ 기획 (PRD)

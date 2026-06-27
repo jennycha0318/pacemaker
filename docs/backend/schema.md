@@ -1,6 +1,6 @@
 # Backend & DB Schema
 
-> Pacemaker 백엔드 레퍼런스. 인증 · DB 스키마 · 보안(RLS) · API 패턴 · 배포.
+> 큐핏 백엔드 레퍼런스. 인증 · DB 스키마 · 보안(RLS) · API 패턴 · 배포.
 > 구현체: `web/` (Next.js 15 App Router + Supabase). 상태: MVP.
 > SQL 원본: [`web/supabase/schema.sql`](../../web/supabase/schema.sql)
 

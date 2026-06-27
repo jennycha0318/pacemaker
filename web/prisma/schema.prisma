@@ -1,4 +1,4 @@
-// Pacemaker DB 스키마 (초안 v0.1)
+// 큐핏 DB 스키마 (초안 v0.1)
 // 데이터 모델 설명: ../../docs/data/schema.md
 //
 // 실제 사용 전 `web/`에서 Next.js + Prisma 초기화 필요:

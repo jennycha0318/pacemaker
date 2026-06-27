@@ -11,7 +11,7 @@
 기존 사용자를 인증한다. 이메일/비밀번호 또는 Google OAuth.
 
 ## UI 요소
-- 제목 "로그인", 부제 "Pacemaker에 오신 걸 환영해요."
+- 제목 "로그인", 부제 "큐핏에 오신 걸 환영해요."
 - "Google로 계속하기" 버튼 (`GoogleButton`, 로딩 시 "연결 중…")
 - 구분선 "또는 이메일로"
 - 이메일 입력 (`type="email"`, placeholder `you@example.com`)
