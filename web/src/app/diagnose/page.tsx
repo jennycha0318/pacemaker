@@ -9,7 +9,7 @@ import { Report } from "@/components/Report";
 import { fileToResized } from "@/lib/image";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
 import { getProfile, saveProfile } from "@/lib/profile";
-import { flushConsent } from "@/lib/consent";
+import { getConsentState } from "@/lib/consent";
 import { Logo } from "@/components/Logo";
 
 const STAGES: { v: Stage; name: string; note: string }[] = [
@@ -117,6 +117,15 @@ export default function DiagnosePage() {
         const user = data?.user ?? null;
         setLoggedIn(!!user);
 
+        // 데이터 활용 미동의자는 동의 화면으로(인증 직후 1회). 컬럼 미생성(SQL 미실행) 시 통과 — lockout 방지.
+        if (user) {
+          const consent = await getConsentState(supabase, user.id);
+          if (consent.known && !consent.consented) {
+            window.location.replace("/consent");
+            return;
+          }
+        }
+
         // ── 게스트 결과 복원(로그인 상태에서만) ──
         if (user) {
           let pending: { stage: Stage; result: Diagnosis } | null = null;
@@ -143,7 +152,6 @@ export default function DiagnosePage() {
             setResult(pending.result);
             setSaveStatus("saved");
             setPhase("result");
-            void flushConsent(supabase, user.id); // 게스트→가입 첫 방문에서도 동의 시각 기록(증빙)
             setLoadingProfile(false);
             return; // pending 복원이 프로필 기반 phase 결정보다 우선
           }
@@ -169,7 +177,6 @@ export default function DiagnosePage() {
         // 재진단 개인화 — 직전 진단의 통찰 + 예측 + 사용자 피드백(예측 적중·그때 결과)을 넘겨
         // '지난번에 통했던 방법은 이어가고, 안 통한 건 바꾸기' + 다른 각도 유도.
         if (user) {
-          void flushConsent(supabase, user.id); // 가입/로그인 시 보류된 데이터 활용 동의를 영속 기록(증빙)
           try {
             // 재진단 개인화 — 최근 5건 진단 이력 + 예측 적중 흐름을 누적 회고로 주입.
             // '나를 기억한다'(직전 1건)를 '나에 대해 학습한다'(누적 이력+적중률)로 격상.
