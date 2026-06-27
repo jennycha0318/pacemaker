@@ -19,7 +19,7 @@ const STAGES: { v: Stage; name: string; note: string }[] = [
   { v: "breakup", name: "이별 후", note: "재회하고 싶어요" },
 ];
 
-type Phase = "me" | "stage" | "partner" | "survey" | "analyzing" | "result";
+type Phase = "kakao" | "me" | "stage" | "partner" | "survey" | "analyzing" | "result";
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "guest";
 
 // 뒤로가기 버튼 공통 스타일 — 설문 '이전' 버튼과 위치·모양 통일(스텝 표시 아래, 글래스 알약)
@@ -79,7 +79,7 @@ function isMinorYear(year: number | null): boolean {
 }
 
 export default function DiagnosePage() {
-  const [phase, setPhase] = useState<Phase>("me");
+  const [phase, setPhase] = useState<Phase>("kakao"); // 카톡 캡처를 첫 화면(훅)으로
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [hasProfileBirth, setHasProfileBirth] = useState(false); // 로그인+생년 있으면 '내 정보' 단계 생략
   const [myBirthYear, setMyBirthYear] = useState("");
@@ -171,7 +171,7 @@ export default function DiagnosePage() {
             savedPartnerRef.current = { birthYear: pb, mbti: pm, note: pn };
             setPrefilledFromSaved(true);
           }
-          if (p.birthYear) setPhase("stage");
+          // 생년 있으면 '내 정보'는 건너뜀(카톡 화면의 '다음'에서 stage로 분기). 첫 화면은 항상 카톡.
         }
 
         // 재진단 개인화 — 직전 진단의 통찰 + 예측 + 사용자 피드백(예측 적중·그때 결과)을 넘겨
@@ -444,11 +444,60 @@ export default function DiagnosePage() {
   }
 
   // ── 내 정보 (생년 + 내 MBTI) ──
+  // ── 카톡 캡처 (첫 화면 · 훅) ──
+  if (phase === "kakao") {
+    const next = () => setPhase(hasProfileBirth ? "stage" : "me");
+    return (
+      <div className="min-h-[calc(100svh-9rem)]">
+        <Link href="/" className={BACK_BTN}>← 처음으로</Link>
+        <h2 className="mb-2 mt-3 text-[26px] font-bold tracking-tight">상대와의 카톡, 그대로 보여주세요</h2>
+        <p className="mb-6 text-sm text-muted">캡처를 올리면 상대의 관심도·온도·연락 패턴까지 읽어 훨씬 정확하게 봐드려요. 없어도 진단할 수 있어요.</p>
+
+        <input
+          ref={kakaoInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          aria-label="카톡 캡처 선택"
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []).slice(0, 3);
+            setKakaoFiles(files.map((file) => ({ url: URL.createObjectURL(file), file })));
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => kakaoInputRef.current?.click()}
+          className="flex min-h-[170px] w-full flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-accent/60 bg-accent/5 py-8 text-center transition active:scale-[0.98] hover:bg-accent/10"
+        >
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-primaryDark" aria-hidden="true">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          </svg>
+          <span className="text-base font-bold text-primaryDark">카톡 캡처 올리기</span>
+          <span className="text-[12.5px] text-muted">최대 3장 · 무료</span>
+        </button>
+        {kakaoFiles.length > 0 && (
+          <div className="mt-3 flex gap-2">
+            {kakaoFiles.map((p, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={i} src={p.url} alt={`캡처 ${i + 1}`} className="h-16 w-16 rounded-lg border border-line object-cover" />
+            ))}
+          </div>
+        )}
+
+        <button className="btn btn-primary mt-6" onClick={next}>
+          {kakaoFiles.length > 0 ? "이 캡처로 진단 시작" : "다음"}
+        </button>
+        <button className="btn btn-ghost mt-2.5" onClick={() => { setKakaoFiles([]); next(); }}>캡처 없이 진단하기</button>
+      </div>
+    );
+  }
+
   if (phase === "me") {
     return (
       <div className="min-h-[calc(100svh-9rem)]">
         <StepIndicator phase="me" meDone={hasProfileBirth} />
-        {!hasProfileBirth && <Link href="/" className={BACK_BTN}>← 처음으로</Link>}
+        <button onClick={() => setPhase("kakao")} className={BACK_BTN}>← 카톡</button>
         <h2 className="mb-6 mt-3 text-[26px] font-bold tracking-tight">먼저, 당신에 대해 알려주세요</h2>
 
         <label className="mb-1.5 block text-[13px] font-bold">출생연도</label>
@@ -468,7 +517,7 @@ export default function DiagnosePage() {
     return (
       <div className="min-h-[calc(100svh-9rem)]">
         <StepIndicator phase="stage" meDone={hasProfileBirth} />
-        <button onClick={() => setPhase("me")} className={BACK_BTN}>← 내 정보</button>
+        <button onClick={() => setPhase(hasProfileBirth ? "kakao" : "me")} className={BACK_BTN}>← {hasProfileBirth ? "카톡" : "내 정보"}</button>
         <h2 className="mb-6 mt-3 text-[26px] font-bold tracking-tight">지금 어떤 상황인가요?</h2>
         <div className="flex flex-col gap-3.5">
           {STAGES.map((s) => (
@@ -499,7 +548,7 @@ export default function DiagnosePage() {
             <span className="text-primaryDark">지난번 상대 정보예요. 같은 사람이면 그대로 두세요.</span>
             <button
               type="button"
-              onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setKakaoFiles([]); setPrefilledFromSaved(false); }}
+              onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setPrefilledFromSaved(false); }}
               className="shrink-0 rounded-full bg-white/70 px-3 py-1 font-bold text-primaryDark transition active:scale-95 hover:bg-white"
             >
               다른 사람이면 지우기
@@ -521,41 +570,10 @@ export default function DiagnosePage() {
           value={partnerNote}
           onChange={(e) => setPartnerNote(e.target.value)}
         />
-        <p className="mb-4 mt-1.5 text-[12.5px] text-muted">적어주시면 상대 성향까지 함께 분석해 더 맞춤 조언을 드려요.</p>
-
-        <label className="mb-1.5 block text-[13px] font-bold">상대와의 카톡 대화 <span className="font-normal text-muted">(선택 · 무료)</span></label>
-        <p className="mb-2.5 text-[12.5px] text-muted">캡처(최대 3장)를 올리면 상대의 관심도·온도·연락 패턴까지 읽어 훨씬 정확해져요.</p>
-        <input
-          ref={kakaoInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          aria-label="카톡 캡처 선택"
-          onChange={(e) => {
-            const files = Array.from(e.target.files ?? []).slice(0, 3);
-            setKakaoFiles(files.map((file) => ({ url: URL.createObjectURL(file), file })));
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => kakaoInputRef.current?.click()}
-          className="w-full rounded-2xl border border-dashed border-accent/60 bg-accent/5 py-3.5 text-sm font-bold text-primaryDark transition active:scale-[0.98] hover:bg-accent/10"
-        >
-          카톡 캡처 올리기 (최대 3장)
-        </button>
-        {kakaoFiles.length > 0 && (
-          <div className="mt-3 flex gap-2">
-            {kakaoFiles.map((p, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={p.url} alt={`캡처 ${i + 1}`} className="h-16 w-16 rounded-lg border border-line object-cover" />
-            ))}
-          </div>
-        )}
-        <div className="mb-5" />
+        <p className="mb-5 mt-1.5 text-[12.5px] text-muted">적어주시면 상대 성향까지 함께 분석해 더 맞춤 조언을 드려요.</p>
 
         <button className="btn btn-primary" onClick={() => { savePartner(); setPhase("survey"); }}>다음</button>
-        <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setKakaoFiles([]); setPrefilledFromSaved(false); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
+        <button className="btn btn-ghost mt-2.5" onClick={() => { setPartnerBirthYear(""); setPartnerMbti(""); setPartnerNote(""); setPrefilledFromSaved(false); setPhase("survey"); }}>모르겠어요 · 건너뛰기</button>
       </div>
     );
   }
