@@ -28,6 +28,7 @@ export default function ChatPage() {
   const [name, setName] = useState("");
   const [diagnosisId, setDiagnosisId] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null); // null=확인중, false=비회원(게이트)
+  const [hasDiagnosis, setHasDiagnosis] = useState<boolean | null>(null); // null=확인중, false=진단 이력 없음(게이트)
   const endRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
@@ -41,6 +42,7 @@ export default function ChatPage() {
         if (h.context) setContext(h.context);
         if (h.diagnosisId) setDiagnosisId(h.diagnosisId);
         hasHandoff = !!h.context;
+        if (hasHandoff) setHasDiagnosis(true); // 결과에서 바로 넘어옴 → 진단 후
         sessionStorage.removeItem("qpit:chatHandoff");
       }
     } catch {
@@ -61,6 +63,7 @@ export default function ChatPage() {
           .order("created_at", { ascending: false })
           .limit(1);
         const r = rows?.[0] as { id?: string; stage?: string; result?: Record<string, unknown> } | undefined;
+        setHasDiagnosis(!!r?.id); // 진단 이력 유무 → 채팅은 진단 후에만
         if (r?.id) setDiagnosisId(r.id);
         const d = r?.result as
           | { scoreTitle?: string; score?: number; reason?: string; plan?: { when?: string }; kakaoAnalysis?: string }
@@ -74,6 +77,7 @@ export default function ChatPage() {
         }
       } catch {
         setLoggedIn((v) => v ?? false); // getUser 실패 시에만 비회원 처리(이미 판정됐으면 유지)
+        setHasDiagnosis((v) => v ?? true); // DB 확인 실패 시엔 채팅 허용(차단 회피)
       }
     })();
   }, []);
@@ -113,6 +117,18 @@ export default function ChatPage() {
         <p className="mb-6 text-sm text-muted">로그인하면 진단 결과를 기억하고, 이어지는 상담과 예측 검증까지 받을 수 있어요.</p>
         <Link href="/login" className="btn btn-primary block text-center">로그인하고 상담받기</Link>
         <Link href="/diagnose" className="mt-3 inline-block text-sm font-bold text-primaryDark">먼저 진단부터 해보기</Link>
+      </div>
+    );
+  }
+
+  // 진단 이력이 없으면(핸드오프·DB 모두 없음) 채팅 비활성 — 진단 먼저
+  if (hasDiagnosis === null) return <div className="pt-10 text-center text-sm text-muted">불러오는 중…</div>;
+  if (!hasDiagnosis) {
+    return (
+      <div className="px-1 pt-10 text-center">
+        <h2 className="mb-2 text-[22px] font-bold tracking-tight">먼저 진단을 받아보세요</h2>
+        <p className="mb-6 text-sm text-muted">큐핏 상담은 진단 결과를 바탕으로 이어가요. 진단을 한 번 받으면 그 결과로 바로 상담할 수 있어요.</p>
+        <Link href="/diagnose" className="btn btn-primary block text-center">진단 받으러 가기</Link>
       </div>
     );
   }
