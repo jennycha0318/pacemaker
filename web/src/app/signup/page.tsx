@@ -71,8 +71,17 @@ export default function SignupPage() {
       <h2 className="mb-1.5 text-[30px] font-bold tracking-tight">회원가입</h2>
       <p className="mb-6 text-sm text-muted">이메일로 가입하거나 Google을 사용하세요.</p>
 
-      <GoogleButton />
+      <GoogleButton hasConsent={agree} onNeedConsent={() => setErr("개인정보 수집·이용 및 데이터 활용에 동의해 주세요.")} />
       <p className="mt-1.5 text-center text-[12.5px] text-muted">Google로 가입 시 계정 이름이 닉네임으로 저장돼요.</p>
+
+      <label className="mb-1 mt-3.5 flex items-start gap-2 text-[13px] text-muted">
+        <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
+        <span>
+          <Link href="/privacy" target="_blank" className="font-bold text-primaryDark underline">개인정보 수집·이용 및 데이터 활용</Link>에 동의합니다.
+          이메일·닉네임·출생연도·진단 입력(자유서술 포함)·채팅 상담 내용이 저장되고, 서비스 개선과 AI 분석에 활용돼요. 언제든 열람·삭제할 수 있어요.
+        </span>
+      </label>
+
       <div className="my-[18px] flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line">
         <span>또는 이메일로</span>
       </div>
@@ -98,14 +107,6 @@ export default function SignupPage() {
 
       <p className="min-h-[18px] py-1.5 text-[13px] text-bad">{err}</p>
       {ok && <p className="mb-2 text-[13px] text-good">{ok}</p>}
-
-      <label className="mb-3 flex items-start gap-2 text-[13px] text-muted">
-        <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
-        <span>
-          <Link href="/privacy" target="_blank" className="font-bold text-primaryDark underline">개인정보 수집·이용</Link>에 동의합니다.
-          이메일·닉네임·출생연도와 (선택)MBTI·진단 입력이 저장되며, 자유서술은 추후 AI 분석에 활용될 수 있어요.
-        </span>
-      </label>
 
       <button className="btn btn-primary" onClick={signup} disabled={loading}>
         {loading ? "가입 중…" : "가입하기"}

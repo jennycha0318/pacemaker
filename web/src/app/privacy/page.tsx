@@ -15,7 +15,8 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-5">
           <li>계정: 이메일, 닉네임(이름). Google 가입 시 Google 계정의 표시 이름</li>
           <li>프로필: 출생연도, MBTI(선택), 애착 성향(선택)</li>
-          <li>진단 입력: 관계 상황·성향 응답, 자유서술 텍스트</li>
+          <li>진단 입력: 관계 상황·성향 응답, 자유서술 텍스트, (선택) 업로드한 카카오톡 대화 캡처</li>
+          <li>채팅 상담 내용: 큐핏에게 보낸 질문과 답변</li>
           <li>상대 정보(선택, 입력 시): 상대의 출생연도·MBTI — 제3자 정보라 꼭 필요한 만큼만 받습니다</li>
           <li>진단 결과 및 생성 시각</li>
         </ul>
@@ -23,8 +24,9 @@ export default function PrivacyPage() {
 
       <Section title="2. 수집·이용 목적">
         <ul className="list-disc pl-5">
-          <li>연애 타이밍 진단 제공 및 진단 히스토리 저장</li>
-          <li>서비스 개선 및 추후 AI 기반 개인화 분석(자유서술 포함)</li>
+          <li>연애 타이밍 진단·상담 제공 및 진단 히스토리 저장</li>
+          <li>재방문 시 개인화(직전 진단·예측 적중 흐름을 반영한 맞춤 해석)</li>
+          <li>서비스 품질·예측 정확도 개선을 위한 분석(통계·집계 형태)</li>
         </ul>
       </Section>
 
@@ -37,6 +39,7 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-5">
           <li>인증·데이터베이스: Supabase</li>
           <li>호스팅: Vercel</li>
+          <li>AI 분석: Anthropic(Claude) — 진단·채팅 입력이 분석을 위해 전송됩니다</li>
         </ul>
       </Section>
 

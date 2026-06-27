@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export function GoogleButton() {
+export function GoogleButton({ hasConsent = true, onNeedConsent }: { hasConsent?: boolean; onNeedConsent?: () => void } = {}) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
   async function google() {
+    if (!hasConsent) {
+      onNeedConsent?.();
+      return;
+    }
     setErr("");
     setLoading(true);
     try {

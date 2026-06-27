@@ -49,6 +49,9 @@ export default function LoginPage() {
       <p className="mb-6 text-sm text-muted">큐핏에 오신 걸 환영해요.</p>
 
       <GoogleButton />
+      <p className="mt-1.5 text-center text-[12px] text-muted">
+        계속 진행하면 <Link href="/privacy" target="_blank" className="underline">개인정보 처리방침·데이터 활용</Link>에 동의하는 것으로 간주돼요.
+      </p>
       <div className="my-[18px] flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line">
         <span>또는 이메일로</span>
       </div>
