@@ -143,6 +143,7 @@ export default function DiagnosePage() {
             setResult(pending.result);
             setSaveStatus("saved");
             setPhase("result");
+            void flushConsent(supabase, user.id); // 게스트→가입 첫 방문에서도 동의 시각 기록(증빙)
             setLoadingProfile(false);
             return; // pending 복원이 프로필 기반 phase 결정보다 우선
           }
@@ -351,6 +352,10 @@ export default function DiagnosePage() {
         if (data.predictionType) next.predictionType = data.predictionType;
         if (data.modelVersion) next.modelVersion = data.modelVersion;
         if (data.promptVersion) next.promptVersion = data.promptVersion;
+      } else {
+        // interpret 호출 실패(네트워크·타임아웃) — 순수 규칙 결과. 계측 결손 방지 스탬프.
+        next.modelVersion = "fallback";
+        next.promptVersion = "fallback";
       }
       if (imgRes && imgRes.ok) {
         const data = (await imgRes.json()) as { analysis?: string };
