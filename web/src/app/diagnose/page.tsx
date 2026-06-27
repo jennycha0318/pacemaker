@@ -27,11 +27,11 @@ const BACK_BTN =
   "inline-block rounded-full bg-white/55 px-3 py-1.5 text-sm font-bold text-primaryDark backdrop-blur transition active:scale-95 hover:bg-white/75";
 
 // 게스트 진단 결과 임시 보존 키(가입/로그인 직후 /diagnose 재진입 시 복원·저장)
-const PENDING_KEY = "pacemaker:pendingDiagnosis";
+const PENDING_KEY = "qpit:pendingDiagnosis";
 // S2 강박 재진단 쿨다운: 진단 시각 기록(부드러운 안내, 비차단)
-const DIAG_HISTORY_KEY = "pacemaker:diagHistory";
+const DIAG_HISTORY_KEY = "qpit:diagHistory";
 // S3 차단 후 재진단 우회 경고: 마지막 '차단' 응답 시각
-const BLOCKED_AT_KEY = "pacemaker:blockedAt";
+const BLOCKED_AT_KEY = "qpit:blockedAt";
 
 // ── 통합 진행 스텝(대단계) ──
 // me/stage/partner/survey 4단계의 위치를 글래스 톤 세그먼트로 표시.
