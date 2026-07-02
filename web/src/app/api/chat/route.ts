@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -72,6 +73,19 @@ export async function POST(req: Request) {
       reply:
         "지금 많이 위험하거나 힘든 상황일 수 있어요. 이건 큐핏이 도와드릴 수 있는 범위를 넘는 일이라, 전문기관의 도움을 꼭 받으셨으면 좋겠어요.\n\n• 위급하면 112 (경찰)\n• 여성긴급전화 1366 (24시간·폭력·위기 상담)\n• 자살예방 상담전화 109\n\n혼자 감당하지 마세요. 당신의 안전이 가장 중요해요.",
     });
+  }
+
+  // 인증 필수 — 채팅 UI는 이미 로그인 게이트 뒤라 회귀 없음. 직접 API 남용만 차단.
+  // (긴급 안전 안내는 위에서 인증보다 먼저 처리 — 비로그인이라도 위기 신호엔 1366·112 응답.)
+  const supabaseAuth = await createClient();
+  const { data: authData } = await supabaseAuth.auth.getUser();
+  const user = authData?.user ?? null;
+  if (!user) {
+    return NextResponse.json({ reply: "큐핏 상담은 로그인 후 이용할 수 있어요. 로그인하고 다시 물어봐 주세요." }, { status: 401 });
+  }
+  // 사용자당 시간당 60회(정상 상담은 넉넉, 스크립트 난사는 차단)
+  if (!rateLimit(`chat:${user.id}`, 60, 60 * 60 * 1000)) {
+    return NextResponse.json({ reply: "메시지가 너무 많아요. 잠시 쉬었다가 다시 이야기해요." }, { status: 429 });
   }
 
   // 키 미설정 → 챗봇 비활성 안내(앱은 동작)

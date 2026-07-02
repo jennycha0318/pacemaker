@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,11 @@ const SYSTEM = `당신은 한국어 'AI 연애 컨설턴트'입니다. 사용자
 - 6~9문장, 평문(마크다운·별표 금지).`;
 
 export async function POST(req: Request) {
+  // 남용 방어 — IP당 시간당 10회. 초과 시 클라이언트는 카톡 분석만 생략(진단은 정상 진행).
+  if (!rateLimit(`images:${clientIp(req)}`, 10, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "요청이 너무 많아요. 잠시 후 다시 시도해 주세요." }, { status: 429 });
+  }
+
   let images: { media_type?: string; data?: string }[] = [];
   let context = "";
   try {
@@ -35,8 +41,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "잘못된 요청이에요." }, { status: 400 });
   }
 
+  // 서버측 크기 검증 — 클라이언트 리사이즈(1024px·JPEG)를 우회한 직접 호출 방어.
+  // base64 약 280만 자 ≈ 원본 2MB. 정상 업로드(수백 KB)는 여유 있게 통과.
+  const MAX_B64 = 2_800_000;
   const valid = images.filter(
-    (im) => im && typeof im.data === "string" && im.data.length > 0 && typeof im.media_type === "string" && MEDIA.has(im.media_type),
+    (im) =>
+      im &&
+      typeof im.data === "string" &&
+      im.data.length > 0 &&
+      im.data.length <= MAX_B64 &&
+      typeof im.media_type === "string" &&
+      MEDIA.has(im.media_type),
   );
   if (valid.length === 0) {
     return NextResponse.json({ error: "분석할 이미지를 찾지 못했어요." }, { status: 400 });

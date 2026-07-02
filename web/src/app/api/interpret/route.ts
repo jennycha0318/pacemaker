@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { diagnose, type Answers, type Diagnosis } from "@/lib/diagnose/engine";
 import { SURVEYS, STAGE_LABEL, type Stage } from "@/lib/diagnose/survey";
 import { analyzeFreeText } from "@/lib/diagnose/freetext";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -109,6 +110,12 @@ const SYSTEM_PROMPT = `당신은 한국어로 답하는 'AI 연애 컨설턴트'
 - 반드시 주어진 JSON 스키마로만 출력하세요.`;
 
 export async function POST(req: Request) {
+  // 남용 방어 — 게스트 퍼널(첫 진단)은 열어두되 IP당 시간당 10회로 제한.
+  // 초과 시 429 → 클라이언트는 규칙 결과로 폴백하므로 실사용자 경험은 유지됨.
+  if (!rateLimit(`interpret:${clientIp(req)}`, 10, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "요청이 너무 많아요. 잠시 후 다시 시도해 주세요." }, { status: 429 });
+  }
+
   let stage: Stage;
   let answers: Answers;
   let minor = false;
