@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Diagnosis } from "@/lib/diagnose/engine";
 import { ShareButton } from "@/components/ShareButton";
@@ -94,6 +95,16 @@ export function OutcomeWidget({
           </div>
         )}
       </div>
+
+      {/* 루프 닫기 — 체크인이 기록되면 그 피드백을 반영한 재진단으로 연결(반복 개인화 체감 지점) */}
+      {(predAns || checkAns) && (
+        <div className="card border border-primary/30 bg-primarySoft/40">
+          <p className="text-sm text-ink">
+            큐핏이 방금 알려준 적중 여부와 결과를 기억해 뒀어요. 지금 상황으로 다시 진단하면 이 피드백까지 반영해 다음 수를 봐드려요.
+          </p>
+          <Link href="/diagnose" className="btn btn-primary mt-3 block text-center">이 피드백 반영해서 다시 진단하기</Link>
+        </div>
+      )}
     </section>
   );
 }

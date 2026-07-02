@@ -10,6 +10,7 @@ import { fileToResized } from "@/lib/image";
 import { YearSelect, MbtiSelect } from "@/components/InfoFields";
 import { getProfile, saveProfile } from "@/lib/profile";
 import { getConsentState } from "@/lib/consent";
+import { CheckinNudge } from "@/components/CheckinNudge";
 import { Logo } from "@/components/Logo";
 
 const STAGES: { v: Stage; name: string; note: string }[] = [
@@ -471,6 +472,7 @@ export default function DiagnosePage() {
     return (
       <div className="min-h-[calc(100svh-9rem)]">
         <Link href="/" className={BACK_BTN}>← 처음으로</Link>
+        <div className="mt-3"><CheckinNudge /></div>
         <h2 className="mb-2 mt-3 text-[26px] font-bold tracking-tight">상대와의 카톡, 그대로 보여주세요</h2>
         <p className="mb-6 text-sm text-muted">캡처를 올리면 상대의 관심도·온도·연락 패턴까지 읽어 훨씬 정확하게 봐드려요. 없어도 진단할 수 있어요.</p>
 
