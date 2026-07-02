@@ -25,13 +25,15 @@ export async function getConsentState(supabase: SupabaseClient, userId: string):
 // 동의 기록(증빙). 컬럼 미생성 시 graceful 실패(차단하지 않음 — SQL 실행 후 다음 동의부터 기록).
 export async function recordConsent(supabase: SupabaseClient, userId: string): Promise<void> {
   try {
-    await supabase.from("profiles").upsert({
+    const { error } = await supabase.from("profiles").upsert({
       id: userId,
       data_consent_at: new Date().toISOString(),
       data_consent_sensitive: true,
       updated_at: new Date().toISOString(),
     });
-  } catch {
-    // 무시
+    // 동의 증빙 기록 실패는 조용히 삼키면 안 됨 — 최소한 로그로 남겨 추적 가능하게
+    if (error) console.error("recordConsent 실패:", error.message);
+  } catch (e) {
+    console.error("recordConsent 예외:", e);
   }
 }

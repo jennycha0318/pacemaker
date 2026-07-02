@@ -102,6 +102,7 @@ export default function DiagnosePage() {
   const [showOverDiagnose, setShowOverDiagnose] = useState(true); // 안내 닫기
   const [blockedBypass, setBlockedBypass] = useState(false); // S3 차단 우회 경고
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [consentAsk, setConsentAsk] = useState(false); // 게스트→가입 복원 시 미동의 — 결과 위 동의 배너 노출(저장 보류)
   const [savedId, setSavedId] = useState<string | null>(null); // 저장된 진단 row id(채팅 연결용)
   const savingRef = useRef(false);    // 중복 저장(insert) 방지
   const advancingRef = useRef(false); // 설문 빠른 연타 방지
@@ -117,16 +118,9 @@ export default function DiagnosePage() {
         const user = data?.user ?? null;
         setLoggedIn(!!user);
 
-        // 데이터 활용 미동의자는 동의 화면으로(인증 직후 1회). 컬럼 미생성(SQL 미실행) 시 통과 — lockout 방지.
-        if (user) {
-          const consent = await getConsentState(supabase, user.id);
-          if (consent.known && !consent.consented) {
-            window.location.replace("/consent");
-            return;
-          }
-        }
-
-        // ── 게스트 결과 복원(로그인 상태에서만) ──
+        // ── 게스트 결과 복원 + 동의 게이트 ──
+        // 순서 중요: 게스트가 가입한 '가장 뜨거운 순간'엔 결과를 먼저 보여주고,
+        // 동의는 결과 위 인라인 배너로 유도. 저장(insert)은 동의 후에만(미동의 시 pending 유지 → 동의 후 재진입 시 자동 저장).
         if (user) {
           let pending: { stage: Stage; result: Diagnosis } | null = null;
           try {
@@ -135,25 +129,47 @@ export default function DiagnosePage() {
           } catch {
             pending = null; // 파싱 실패 — 무시
           }
+          const consent = await getConsentState(supabase, user.id);
+          const needsConsent = consent.known && !consent.consented; // 컬럼 미생성 시 통과 — lockout 방지
+
           if (pending && pending.result && pending.stage) {
+            if (needsConsent) {
+              // 결과는 바로 보여주되 DB 저장은 보류(PENDING_KEY 유지) — 동의하면 다음 진입에서 자동 저장
+              setStage(pending.stage);
+              setResult(pending.result);
+              setConsentAsk(true);
+              setPhase("result");
+              setLoadingProfile(false);
+              return;
+            }
+            let ok = false;
             try {
               const d = pending.result;
-              const { data: ins } = await supabase
+              const { data: ins, error } = await supabase
                 .from("diagnoses")
                 .insert({ user_id: user.id, stage: pending.stage, score: d.score, result: d })
                 .select("id")
                 .single();
-              if (ins?.id) setSavedId(ins.id as string);
+              if (!error && ins?.id) {
+                setSavedId(ins.id as string);
+                ok = true;
+              }
             } catch {
-              // insert 실패해도 결과는 보여줌(아래에서 복원)
+              // insert 실패 — 아래에서 error 상태로 정직하게 표시('다시 저장' 버튼 노출)
             }
             try { localStorage.removeItem(PENDING_KEY); } catch {}
             setStage(pending.stage);
             setResult(pending.result);
-            setSaveStatus("saved");
+            setSaveStatus(ok ? "saved" : "error");
             setPhase("result");
             setLoadingProfile(false);
             return; // pending 복원이 프로필 기반 phase 결정보다 우선
+          }
+
+          // pending 없음 + 미동의 → 동의 화면으로(인증 직후 1회)
+          if (needsConsent) {
+            window.location.replace("/consent");
+            return;
           }
         }
 
@@ -414,6 +430,11 @@ export default function DiagnosePage() {
   }
 
   function reset() {
+    // 미동의 상태로 복원된 사용자는 재진단 전에 동의 먼저(미동의 저장 누수 방지)
+    if (consentAsk) {
+      window.location.href = "/consent";
+      return;
+    }
     setPhase("stage"); setAnswers({}); setQIndex(0); setResult(null);
     const sp = savedPartnerRef.current;
     setFree(""); setKakaoFiles([]); setSaveStatus("idle");
@@ -593,6 +614,13 @@ export default function DiagnosePage() {
   if (phase === "result" && result) {
     return (
       <div>
+        {consentAsk && (
+          <div className="mb-4 rounded-2xl border border-primary bg-primarySoft p-4 text-center">
+            <p className="text-sm font-bold text-ink">이 결과를 저장하고 이어갈까요?</p>
+            <p className="mt-1 text-[12.5px] text-muted">저장·맞춤 상담·예측 검증을 이어가려면 데이터 활용 동의가 필요해요.</p>
+            <Link href="/consent" className="btn btn-primary mt-3 block text-center">동의하고 저장하기</Link>
+          </div>
+        )}
         {saveStatus === "saving" && <p className="mb-3 text-center text-xs text-muted">결과 저장 중…</p>}
         {saveStatus === "saved" && <p className="mb-3 text-center text-xs text-good">히스토리에 저장됨</p>}
         {saveStatus === "error" && (
